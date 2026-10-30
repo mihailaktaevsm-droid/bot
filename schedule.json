@@ -1,8 +1,8 @@
 {
- "group": "Э5-11Б",
+ "group": "Э5-11/6",
  "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
  "title": "Э5-11/6",
- "fetchedAt": "2026-10-30T23:02:41Z",
+ "fetchedAt": "2026-10-30T23:06:21Z",
  "raw": {
   "data": {
    "link": "https://lks.bmstu.ru/lks-back/srv/v2/ics/fdcc10a2-2cea-11f1-a2a8-005056aae53e",
@@ -1139,6 +1139,6 @@
     }
    ]
   },
-  "date": "2026-10-30T23:05:32.769+03:00"
+  "date": "2026-10-31T02:02:41.249+03:00"
  }
 }
