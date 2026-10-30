@@ -1,0 +1,21 @@
+name: Утренняя сводка в Telegram
+
+on:
+  schedule:
+    - cron: "41 3 * * *" # каждый день в 06:41 по Москве (GitHub может задержать на 5–20 минут)
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Отправить сводку
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          HIDDEN: ${{ vars.HIDDEN || 'ФКиС' }}
+        run: python scripts/daily_digest.py
