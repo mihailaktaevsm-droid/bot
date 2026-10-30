@@ -92,7 +92,7 @@ function fmtDuration(min) {
 function defaultState() {
   return {
     tasks: [],
-    settings: { group: DEFAULT_GROUP, semesterStart: guessSemesterStart(), weeks: 18, lksUuid: '' },
+    settings: { group: DEFAULT_GROUP, semesterStart: guessSemesterStart(), weeks: 18, lksUuid: '', hidden: ['ФКиС'] },
     schedule: { lessons: [], updatedAt: null, fetchedAt: null, source: null, title: '' },
   };
 }
@@ -147,24 +147,31 @@ function weekMatches(week, numerator) {
   return week === 'all' || (week === 'ch' && numerator) || (week === 'zn' && !numerator);
 }
 
+// скрытые предметы (по началу названия: «ФКиС» скрывает «ФКиС 09:25 Измайлово»)
+function isHidden(subject) {
+  const name = String(subject || '').toLowerCase();
+  return (state.settings.hidden || []).some((h) => h && name.startsWith(h.toLowerCase()));
+}
+const visibleLessons = () => state.schedule.lessons.filter((l) => !isHidden(l.subject));
+
 function lessonsFor(s) {
   const w = weekInfo(s);
   if (!w.inSemester) return [];
   const day = dowIdx(s) + 1;
-  return state.schedule.lessons
+  return visibleLessons()
     .filter((l) => l.day === day && weekMatches(l.week, w.numerator))
     .sort((a, b) => toMin(a.start) - toMin(b.start));
 }
 
 function lessonsForWeekday(day, numerator) {
-  return state.schedule.lessons
+  return visibleLessons()
     .filter((l) => l.day === day && weekMatches(l.week, numerator))
     .sort((a, b) => toMin(a.start) - toMin(b.start));
 }
 
 function allSubjects() {
   const set = new Set();
-  state.schedule.lessons.forEach((l) => l.subject && set.add(l.subject));
+  visibleLessons().forEach((l) => l.subject && set.add(l.subject));
   state.tasks.forEach((t) => t.subject && set.add(t.subject));
   return [...set].sort((a, b) => a.localeCompare(b, 'ru'));
 }
@@ -706,6 +713,10 @@ function renderSettings() {
         <button class="row accent" data-action="add-lesson">Добавить пару вручную</button>
         <button class="row danger" data-action="clear-schedule">Очистить расписание</button>
       </div>
+      ${(s.hidden || []).length ? `
+      <div class="list-label">Скрытые предметы</div>
+      <div class="list">${s.hidden.map((h, i) => `<div class="row"><span class="label">${esc(h)}</span><button class="link-btn" data-action="unhide-subject" data-i="${i}">Вернуть</button></div>`).join('')}</div>
+      <div class="list-foot">Эти занятия не показываются в расписании, даже после обновления из ЛКС.</div>` : ''}
       <div class="list-foot">Расписание подтягивается само из ЛКС раз в день. Если не вышло: открой своё расписание на lks.bmstu.ru, скопируй ссылку из адресной строки в поле «Ссылка ЛКС», нажми «Открыть расписание в ЛКС», скопируй весь текст страницы и вставь через «Вставить расписание».</div>
 
       <div class="list-label">Данные</div>
@@ -896,6 +907,7 @@ function openLessonSheet(id, date) {
       <div class="field-label">Домашка по предмету</div>
       ${hw.length ? `<div class="card">${hw.map((t) => taskHTML(t, { showDate: true })).join('')}</div>` : '<div class="card"><div class="empty" style="padding:16px">Ничего не задано</div></div>'}
       <button class="btn" data-action="add-hw" data-subject="${esc(l.subject)}" ${target ? `data-date="${target}"` : ''}>＋ Добавить ДЗ${target ? ` к ${esc(fmtRel(target))}` : ''}</button>
+      <button class="btn danger" data-action="hide-subject" data-subject="${esc(l.subject)}">Скрыть предмет из расписания</button>
     `;
   });
 }
@@ -1071,6 +1083,17 @@ const actions = {
     rerenderSheet();
   },
   'save-lesson': saveLesson,
+  'hide-subject': (el) => {
+    const name = el.dataset.subject;
+    const prev = [...(state.settings.hidden || [])];
+    state.settings.hidden = [...prev, name];
+    save(); closeSheet(); render();
+    toast(`«${name}» скрыт`, () => { state.settings.hidden = prev; save(); render(); });
+  },
+  'unhide-subject': (el) => {
+    state.settings.hidden = (state.settings.hidden || []).filter((_, i) => i !== Number(el.dataset.i));
+    save(); render();
+  },
   'delete-lesson': () => {
     if (!confirm('Удалить эту пару из расписания?')) return;
     state.schedule.lessons = state.schedule.lessons.filter((x) => x.id !== ui.lessonDraft.id);
