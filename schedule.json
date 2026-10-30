@@ -1,5 +1,1144 @@
 {
-  "group": "Э5-11Б",
-  "fetchedAt": null,
-  "lessons": []
+ "group": "Э5-11Б",
+ "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+ "title": "Э5-11/6",
+ "fetchedAt": "2026-10-30T23:02:41Z",
+ "raw": {
+  "data": {
+   "link": "https://lks.bmstu.ru/lks-back/srv/v2/ics/fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+   "type": "schedule.group",
+   "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+   "title": "Э5-11/6",
+   "schedule": [
+    {
+     "day": 1,
+     "time": 4,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [
+      {
+       "uuid": "7f0ec2d4-d618-4472-a618-f071cfbe83d8",
+       "lastName": "Полехина",
+       "firstName": "Галина",
+       "middleName": "Евгеньевна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "216л",
+       "uuid": "e91410e0-f220-4f22-9721-ea3616673e2f",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "МА",
+      "actType": "lecture",
+      "fullName": "Математический анализ",
+      "shortName": "Математический анализ"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    },
+    {
+     "day": 1,
+     "time": 5,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "17:25",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "731л",
+       "uuid": "a2257951-e15f-4fda-b6d2-cbaae1ff1f39",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "15:55",
+     "discipline": {
+      "abbr": "Инф",
+      "actType": "seminar",
+      "fullName": "Информатика",
+      "shortName": "Информатика"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 25,
+     "endTimeHourNum": 17,
+     "startTimeMinNum": 55,
+     "startTimeHourNum": 15
+    },
+    {
+     "day": 1,
+     "time": 6,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "19:05",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "каф. Л3",
+       "uuid": null
+      }
+     ],
+     "startTime": "17:35",
+     "discipline": {
+      "abbr": "ИЯ",
+      "actType": "seminar",
+      "fullName": "Иностранный язык",
+      "shortName": "Иностранный язык"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 5,
+     "endTimeHourNum": 19,
+     "startTimeMinNum": 35,
+     "startTimeHourNum": 17
+    },
+    {
+     "day": 2,
+     "time": 2,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "11:40",
+     "teachers": [],
+     "audiences": [],
+     "startTime": "10:10",
+     "discipline": {
+      "abbr": "ФКиС 09:25 Измайлово",
+      "fullName": "ФКиС 09:25 Измайлово",
+      "shortName": "ФКиС 09:25 Измайлово"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 40,
+     "endTimeHourNum": 11,
+     "startTimeMinNum": 10,
+     "startTimeHourNum": 10
+    },
+    {
+     "day": 2,
+     "time": 3,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "13:20",
+     "teachers": [
+      {
+       "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
+       "lastName": "Горячкина",
+       "firstName": "Александра",
+       "middleName": "Юрьевна"
+      },
+      {
+       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
+       "lastName": "Лиморенко",
+       "firstName": "Мария",
+       "middleName": "Евгеньевна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "1134л",
+       "uuid": "ea0e6361-ebe6-4d6a-b672-d4d17c9c2335",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": "a2c47171-82fc-1029-96dd-000347adedc6",
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "11:50",
+     "discipline": {
+      "abbr": "НГ",
+      "actType": "seminar",
+      "fullName": "Начертательная геометрия",
+      "shortName": "Начертательная геометрия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 20,
+     "endTimeHourNum": 13,
+     "startTimeMinNum": 50,
+     "startTimeHourNum": 11
+    },
+    {
+     "day": 2,
+     "time": 4,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [
+      {
+       "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
+       "lastName": "Горячкина",
+       "firstName": "Александра",
+       "middleName": "Юрьевна"
+      },
+      {
+       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
+       "lastName": "Лиморенко",
+       "firstName": "Мария",
+       "middleName": "Евгеньевна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "1134л",
+       "uuid": "ea0e6361-ebe6-4d6a-b672-d4d17c9c2335",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": "a2c47171-82fc-1029-96dd-000347adedc6",
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "ИиКГ",
+      "actType": "seminar",
+      "fullName": "Инженерная и компьютерная графика",
+      "shortName": ""
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    },
+    {
+     "day": 2,
+     "time": 5,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "17:25",
+     "teachers": [],
+     "audiences": [],
+     "startTime": "15:55",
+     "discipline": {
+      "abbr": "УТП МТ13",
+      "fullName": "УТП МТ13",
+      "shortName": "УТП МТ13"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 25,
+     "endTimeHourNum": 17,
+     "startTimeMinNum": 55,
+     "startTimeHourNum": 15
+    },
+    {
+     "day": 2,
+     "time": 6,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "19:05",
+     "teachers": [],
+     "audiences": [],
+     "startTime": "17:35",
+     "discipline": {
+      "abbr": "УТП МТ13",
+      "fullName": "УТП МТ13",
+      "shortName": "УТП МТ13"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 5,
+     "endTimeHourNum": 19,
+     "startTimeMinNum": 35,
+     "startTimeHourNum": 17
+    },
+    {
+     "day": 3,
+     "time": 2,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "11:40",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "каф. ФН5",
+       "uuid": null
+      }
+     ],
+     "startTime": "10:10",
+     "discipline": {
+      "abbr": "Хим",
+      "actType": "lab",
+      "fullName": "Химия",
+      "shortName": "Химия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 40,
+     "endTimeHourNum": 11,
+     "startTimeMinNum": 10,
+     "startTimeHourNum": 10
+    },
+    {
+     "day": 3,
+     "time": 3,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "13:20",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "327.1",
+       "uuid": "3b013cb3-203e-4664-8876-9685bd6e903d",
+       "building": "A1 ГУК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 2,
+       "building_id_building": 15
+      }
+     ],
+     "startTime": "11:50",
+     "discipline": {
+      "abbr": "Хим",
+      "actType": "lecture",
+      "fullName": "Химия",
+      "shortName": "Химия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 20,
+     "endTimeHourNum": 13,
+     "startTimeMinNum": 50,
+     "startTimeHourNum": 11
+    },
+    {
+     "day": 4,
+     "time": 3,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "13:55",
+     "teachers": [],
+     "audiences": [],
+     "startTime": "11:50",
+     "discipline": {
+      "abbr": "ФКиС 11:10 Измайлово",
+      "fullName": "ФКиС 11:10 Измайлово",
+      "shortName": "ФКиС 11:10 Измайлово"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 55,
+     "endTimeHourNum": 13,
+     "startTimeMinNum": 50,
+     "startTimeHourNum": 11
+    },
+    {
+     "day": 4,
+     "time": 4,
+     "week": "ch",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "216л",
+       "uuid": "e91410e0-f220-4f22-9721-ea3616673e2f",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "Инф",
+      "actType": "lecture",
+      "fullName": "Информатика",
+      "shortName": "Информатика"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    },
+    {
+     "day": 4,
+     "time": 4,
+     "week": "zn",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [
+      {
+       "uuid": "b7965ff5-7d98-4a41-a7fd-4288e11438d3",
+       "lastName": "Крестовских",
+       "firstName": "Елена",
+       "middleName": "Владимировна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "216л",
+       "uuid": "e91410e0-f220-4f22-9721-ea3616673e2f",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "ВвС",
+      "actType": "lecture",
+      "fullName": "Введение в специальность",
+      "shortName": ""
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    },
+    {
+     "day": 4,
+     "time": 5,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "17:25",
+     "teachers": [
+      {
+       "uuid": "31b86766-b813-44ce-8fe0-184603a94644",
+       "lastName": "Киреева",
+       "firstName": "Елена",
+       "middleName": "Александровна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "736л",
+       "uuid": "7aee5db4-14de-41e2-a2dc-2f13065dfa1e",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "15:55",
+     "discipline": {
+      "abbr": "АГ",
+      "actType": "seminar",
+      "fullName": "Аналитическая геометрия",
+      "shortName": "Аналитическая геометрия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 25,
+     "endTimeHourNum": 17,
+     "startTimeMinNum": 55,
+     "startTimeHourNum": 15
+    },
+    {
+     "day": 4,
+     "time": 6,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "19:05",
+     "teachers": [
+      {
+       "uuid": "99458564-81b6-11f0-b87e-005056b16637",
+       "lastName": "Иванова",
+       "firstName": "Анна",
+       "middleName": "Николаевна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "717л",
+       "uuid": "4ebf7e2f-2064-4b36-bf95-849f6a28192d",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": "a2f2f647-82fc-1029-96dd-000347adedc6",
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "17:35",
+     "discipline": {
+      "abbr": "ИР",
+      "actType": "seminar",
+      "fullName": "История России",
+      "shortName": "История"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 5,
+     "endTimeHourNum": 19,
+     "startTimeMinNum": 35,
+     "startTimeHourNum": 17
+    },
+    {
+     "day": 5,
+     "time": 4,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [],
+     "audiences": [
+      {
+       "name": "257л",
+       "uuid": "8547c7c9-56f3-4946-b7c8-088e9f10f990",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "Инф",
+      "actType": "lab",
+      "fullName": "Информатика",
+      "shortName": "Информатика"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    },
+    {
+     "day": 5,
+     "time": 5,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "17:25",
+     "teachers": [
+      {
+       "uuid": "ffafd818-3f01-43e6-b59a-22ecf9ff8f0f",
+       "lastName": "Бебенина",
+       "firstName": "Антонина",
+       "middleName": "Александровна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "255л",
+       "uuid": "539e402e-c59c-409d-9714-77648cb72106",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "15:55",
+     "discipline": {
+      "abbr": "МА",
+      "actType": "seminar",
+      "fullName": "Математический анализ",
+      "shortName": "Математический анализ"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 25,
+     "endTimeHourNum": 17,
+     "startTimeMinNum": 55,
+     "startTimeHourNum": 15
+    },
+    {
+     "day": 6,
+     "time": 1,
+     "week": "ch",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "10:00",
+     "teachers": [
+      {
+       "uuid": "674c21fa-378c-11ee-b82c-005056b16637",
+       "lastName": "Смирнов",
+       "firstName": "Дмитрий",
+       "middleName": "Владимирович"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "222л",
+       "uuid": "f5383ae7-605d-4382-84f4-df97c72f78dc",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "08:30",
+     "discipline": {
+      "abbr": "ИР",
+      "actType": "lecture",
+      "fullName": "История России",
+      "shortName": "История"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 0,
+     "endTimeHourNum": 10,
+     "startTimeMinNum": 30,
+     "startTimeHourNum": 8
+    },
+    {
+     "day": 6,
+     "time": 2,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "11:40",
+     "teachers": [
+      {
+       "uuid": "c48b2298-61c8-4675-8821-28c93ea369b6",
+       "lastName": "Яковук",
+       "firstName": "Олег",
+       "middleName": "Анатольевич"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "222л",
+       "uuid": "f5383ae7-605d-4382-84f4-df97c72f78dc",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "10:10",
+     "discipline": {
+      "abbr": "НГ",
+      "actType": "lecture",
+      "fullName": "Начертательная геометрия",
+      "shortName": "Начертательная геометрия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 40,
+     "endTimeHourNum": 11,
+     "startTimeMinNum": 10,
+     "startTimeHourNum": 10
+    },
+    {
+     "day": 6,
+     "time": 3,
+     "week": "all",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6,12/6,14/6,13/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "92dc0ddc-2ceb-11f1-bc59-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "60db92da-2ceb-11f1-bae7-005056aae53e"
+       },
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "ab10f9ea-1624-11f1-9d39-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "13:55",
+     "teachers": [
+      {
+       "uuid": "31b86766-b813-44ce-8fe0-184603a94644",
+       "lastName": "Киреева",
+       "firstName": "Елена",
+       "middleName": "Александровна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "222л",
+       "uuid": "f5383ae7-605d-4382-84f4-df97c72f78dc",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "12:25",
+     "discipline": {
+      "abbr": "АГ",
+      "actType": "lecture",
+      "fullName": "Аналитическая геометрия",
+      "shortName": "Аналитическая геометрия"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 55,
+     "endTimeHourNum": 13,
+     "startTimeMinNum": 25,
+     "startTimeHourNum": 12
+    },
+    {
+     "day": 6,
+     "time": 4,
+     "week": "zn",
+     "groups": [
+      {
+       "name": "Э5-11/6",
+       "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
+       "department_uid": "a2b276a4-82fc-1029-96dd-000347adedc6"
+      }
+     ],
+     "stream": {
+      "name": "Э5-11/6",
+      "groups": [
+       {
+        "sub1": 0,
+        "sub2": 0,
+        "groupUuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e"
+       }
+      ]
+     },
+     "endTime": "15:35",
+     "teachers": [
+      {
+       "uuid": "ffafd818-3f01-43e6-b59a-22ecf9ff8f0f",
+       "lastName": "Бебенина",
+       "firstName": "Антонина",
+       "middleName": "Александровна"
+      }
+     ],
+     "audiences": [
+      {
+       "name": "731л",
+       "uuid": "a2257951-e15f-4fda-b6d2-cbaae1ff1f39",
+       "building": "E1 УЛК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": null,
+       "building_id_block": 4,
+       "building_id_building": 20
+      }
+     ],
+     "startTime": "14:05",
+     "discipline": {
+      "abbr": "МА",
+      "actType": "seminar",
+      "fullName": "Математический анализ",
+      "shortName": "Математический анализ"
+     },
+     "permission": "timetable.edit-all",
+     "endTimeMinNum": 35,
+     "endTimeHourNum": 15,
+     "startTimeMinNum": 5,
+     "startTimeHourNum": 14
+    }
+   ]
+  },
+  "date": "2026-10-30T23:05:32.769+03:00"
+ }
 }
