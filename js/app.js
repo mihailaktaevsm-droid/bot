@@ -1015,7 +1015,7 @@ function taskEditorHTML() {
   }
   const custom = !quick.some((q) => q.date === d.date);
   const dateChips = quick.map((q) => `<button class="chip ${d.date === q.date ? 'active' : ''}" data-action="draft-date" data-date="${q.date}">${esc(q.label)}</button>`).join('')
-    + `<label class="chip ${custom ? 'active' : ''}">📅 ${custom ? esc(fmtRel(d.date)) : 'Другая дата'}<input type="date" data-field="date" value="${d.date}"></label>`;
+    + `<label class="chip ${custom ? 'active' : ''}"><span>📅 ${custom ? esc(fmtRel(d.date)) : 'Другая дата'}</span><input type="date" data-field="date" value="${d.date}"></label>`;
 
   // время
   const dayLessons = lessonsFor(d.date);
@@ -1025,7 +1025,7 @@ function taskEditorHTML() {
     `<button class="chip ${!d.time ? 'active' : ''}" data-action="draft-time" data-time="">Без времени</button>`,
     beforeTime ? `<button class="chip ${d.time === beforeTime ? 'active' : ''}" data-action="draft-time" data-time="${beforeTime}">Перед парами · ${beforeTime}</button>` : '',
     afterTime ? `<button class="chip ${d.time === afterTime ? 'active' : ''}" data-action="draft-time" data-time="${afterTime}">После пар · ${afterTime}</button>` : '',
-    `<label class="chip ${d.time && d.time !== beforeTime && d.time !== afterTime ? 'active' : ''}">🕒 ${d.time && d.time !== beforeTime && d.time !== afterTime ? d.time : 'Выбрать'}<input type="time" data-field="time" value="${d.time}"></label>`,
+    `<label class="chip ${d.time && d.time !== beforeTime && d.time !== afterTime ? 'active' : ''}"><span>🕒 ${d.time && d.time !== beforeTime && d.time !== afterTime ? d.time : 'Выбрать'}</span><input type="time" data-field="time" value="${d.time}"></label>`,
   ].join('');
 
   return `
@@ -1361,13 +1361,33 @@ sheet.addEventListener('input', (e) => {
       const btn = sheet.querySelector('[data-action="save-task"]');
       if (btn) btn.disabled = !e.target.value.trim();
     }
-    if ((f === 'date' && e.target.value) || f === 'time') rerenderSheet();
-    if (f === 'date' && !e.target.value) ui.draft.date = todayISO();
+    // Пока открыт системный выбор даты/времени, шторку не перерисовываем: iPhone шлёт
+    // событие на каждый поворот колёсика, и перерисовка закрывала/дёргала пикер.
+    // Обновляем только подпись чипа, а полностью перерисуем, когда пикер закроется.
+    if (f === 'date' || f === 'time') {
+      if (f === 'date' && !e.target.value) ui.draft.date = todayISO();
+      const chip = e.target.closest('.chip');
+      const label = chip && chip.querySelector('span');
+      if (chip) {
+        chip.parentElement.querySelectorAll('.chip.active').forEach((c) => c !== chip && c.classList.remove('active'));
+        chip.classList.toggle('active', !!e.target.value);
+      }
+      if (label) label.textContent = f === 'date' ? `📅 ${fmtRel(ui.draft.date)}` : `🕒 ${e.target.value || 'Выбрать'}`;
+      pickerDirty = true;
+    }
   }
   if (lf && ui.lessonDraft) {
     ui.lessonDraft[lf] = e.target.value;
     const btn = sheet.querySelector('[data-action="save-lesson"]');
     if (btn) btn.disabled = !ui.lessonDraft.subject.trim();
+  }
+});
+let pickerDirty = false;
+sheet.addEventListener('focusout', (e) => {
+  const f = e.target.dataset && e.target.dataset.field;
+  if ((f === 'date' || f === 'time') && pickerDirty) {
+    pickerDirty = false;
+    setTimeout(rerenderSheet, 0); // после закрытия пикера — пересчитать чипы (например, «Перед парами»)
   }
 });
 sheet.addEventListener('keydown', (e) => {
