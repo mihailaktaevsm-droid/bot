@@ -6,8 +6,8 @@
 
 Переменные окружения:
   TELEGRAM_BOT_TOKEN — токен бота от @BotFather (обязательно)
-  TELEGRAM_CHAT_ID   — куда слать; если не задан, берётся чат последнего,
-                       кто написал боту (нужно написать боту /start)
+  TELEGRAM_CHAT_ID   — куда слать, можно несколько через запятую; плюс все,
+                       кто написал боту /start за последние сутки
   HIDDEN             — скрытые предметы через запятую (по умолчанию ФКиС)
   TODAY              — дата YYYY-MM-DD вместо сегодняшней (для проверки)
   DRY_RUN=1          — только напечатать сообщение, не отправлять
@@ -226,14 +226,15 @@ def tg(token: str, method: str, params: dict) -> dict:
         return json.load(r)
 
 
-def find_chat(token: str) -> str:
-    updates = tg(token, "getUpdates", {}).get("result", [])
-    for u in reversed(updates):
+def find_chats(token: str) -> list:
+    """Все личные чаты, писавшие боту за последние сутки (Telegram хранит апдейты 24 часа)."""
+    chats = []
+    for u in tg(token, "getUpdates", {}).get("result", []):
         msg = u.get("message") or u.get("edited_message") or {}
         chat = msg.get("chat") or {}
-        if chat.get("type") == "private":
-            return str(chat["id"])
-    return ""
+        if chat.get("type") == "private" and str(chat["id"]) not in chats:
+            chats.append(str(chat["id"]))
+    return chats
 
 
 def main() -> int:
@@ -250,19 +251,26 @@ def main() -> int:
     if not token:
         print("Нет TELEGRAM_BOT_TOKEN: добавь токен бота в Settings → Secrets and variables → Actions")
         return 1
-    chat = os.environ.get("TELEGRAM_CHAT_ID", "").strip() or find_chat(token)
-    if not chat:
+    # можно несколько аккаунтов: TELEGRAM_CHAT_ID=111111,222222
+    saved = [c.strip() for c in os.environ.get("TELEGRAM_CHAT_ID", "").replace(";", ",").split(",") if c.strip()]
+    found = find_chats(token)
+    new = [c for c in found if c not in saved]
+    chats = saved + new
+    if not chats:
         print("Не знаю, куда писать: отправь своему боту /start в Telegram и запусти workflow ещё раз")
         return 1
-    if not os.environ.get("TELEGRAM_CHAT_ID"):
-        print(f"Чат найден: {chat}. Сохрани его в секрет TELEGRAM_CHAT_ID, иначе через сутки бот его забудет.")
+    if new:
+        print(f"Новые чаты: {', '.join(new)}. Сохрани в секрет TELEGRAM_CHAT_ID все через запятую: {','.join(chats)} "
+              "— иначе через сутки бот их забудет.")
     app_url = os.environ.get("APP_URL", "").strip() or "https://mihailaktaevsm-droid.github.io/bot/"
     keyboard = {"inline_keyboard": [[{"text": "📖 Открыть ежедневник", "web_app": {"url": app_url}}]]}
-    res = tg(token, "sendMessage", {"chat_id": chat, "text": text, "parse_mode": "HTML",
-                                    "disable_web_page_preview": "true", "reply_markup": json.dumps(keyboard)})
-    print("Отправлено" if res.get("ok") else f"Ошибка Telegram: {res}")
-    return 0 if res.get("ok") else 1
-
+    ok = True
+    for chat in chats:
+        res = tg(token, "sendMessage", {"chat_id": chat, "text": text, "parse_mode": "HTML",
+                                        "disable_web_page_preview": "true", "reply_markup": json.dumps(keyboard)})
+        print(f"{chat}: {'отправлено' if res.get('ok') else res}")
+        ok = ok and bool(res.get("ok"))
+    return 0 if ok else 1
 
 if __name__ == "__main__":
     sys.exit(main())
