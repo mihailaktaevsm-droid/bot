@@ -1,6 +1,10 @@
 name: Обновить расписание
 
 on:
+  push:
+    paths:
+      - "scripts/fetch_schedule.py"
+      - ".github/workflows/schedule.yml"
   schedule:
     - cron: "17 3 * * *" # каждый день в 06:17 по Москве
   workflow_dispatch:
