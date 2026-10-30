@@ -6,18 +6,18 @@
    ========================================================= */
 
 const STORE_KEY = 'bmstu-planner-v1';
-const DEFAULT_GROUP = 'Э5-11Б';
+const DEFAULT_GROUP = 'Э5-11/6';
 const LKS_API = 'https://lks.bmstu.ru/lks-back/api/v1';
 
 // Сетка пар МГТУ
 const SLOTS = [
-  { start: '08:30', end: '10:05' },
-  { start: '10:15', end: '11:50' },
-  { start: '12:00', end: '13:35' },
-  { start: '13:50', end: '15:25' },
-  { start: '15:40', end: '17:15' },
-  { start: '17:25', end: '19:00' },
-  { start: '19:10', end: '20:45' },
+  { start: '08:30', end: '10:00' },
+  { start: '10:10', end: '11:40' },
+  { start: '11:50', end: '13:20' },
+  { start: '14:05', end: '15:35' },
+  { start: '15:55', end: '17:25' },
+  { start: '17:35', end: '19:05' },
+  { start: '19:15', end: '20:45' },
 ];
 
 const DOW_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
@@ -241,7 +241,7 @@ function normalizeLesson(x, dayFallback) {
     if (!end || !end.includes(':')) end = SLOTS[slot - 1].end;
   }
   if (!start.includes(':')) return null;
-  if (!end.includes(':')) end = fromMin(toMin(start) + 95);
+  if (!end.includes(':')) end = fromMin(toMin(start) + 90);
   const rooms = x.audiences || x.audience || x.rooms || x.room || x.cabinet || [];
   const room = Array.isArray(rooms)
     ? rooms.map((a) => (typeof a === 'string' ? a : a && (a.name || a.number || a.title))).filter(Boolean).join(', ')

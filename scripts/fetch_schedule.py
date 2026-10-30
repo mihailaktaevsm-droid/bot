@@ -5,7 +5,7 @@
 ответ ЛКС, поэтому здесь он сохраняется как есть (в поле "raw").
 
 Переменные окружения:
-  GROUP       — название группы, например Э5-11Б
+  GROUP       — название группы, например Э5-11/6
   GROUP_UUID  — (необязательно) uuid группы из ссылки на расписание в ЛКС
 """
 import datetime as dt
@@ -59,7 +59,7 @@ def find_group_uuid(group: str) -> str:
 
 
 def main() -> int:
-    group = os.environ.get("GROUP", "Э5-11Б").strip()
+    group = os.environ.get("GROUP", "Э5-11/6").strip()
     uuid = os.environ.get("GROUP_UUID", "").strip() or find_group_uuid(group)
     print(f"Группа {group}, uuid {uuid}")
     raw = get(f"{API}/schedules/groups/{uuid}/public")

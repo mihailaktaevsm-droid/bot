@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       group:
-        description: "Группа (например Э5-11Б)"
+        description: "Группа (например Э5-11/6)"
         required: false
 
 permissions:
@@ -26,7 +26,7 @@ jobs:
           python-version: "3.12"
       - name: Скачать расписание из ЛКС
         env:
-          GROUP: ${{ github.event.inputs.group || vars.GROUP || 'Э5-11Б' }}
+          GROUP: ${{ github.event.inputs.group || vars.GROUP || 'Э5-11/6' }}
           GROUP_UUID: ${{ vars.GROUP_UUID }}
         run: python scripts/fetch_schedule.py
       - name: Сохранить изменения
