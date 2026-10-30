@@ -624,6 +624,18 @@ function renderDay() {
     ? `<div class="card">${list.map((t) => taskHTML(t)).join('')}</div>`
     : emptyHTML('✨', 'Ничего не запланировано.<br>Нажми <b>+</b>, чтобы добавить дело или домашку.');
 
+  // домашка обычно задана к следующей паре — показываем её заранее, а не только в день сдачи
+  if (isToday) {
+    const weekAhead = addDays(today, 7);
+    const upcoming = state.tasks
+      .filter((t) => t.subject && !t.done && t.date > today && t.date <= weekAhead)
+      .sort((a, b) => a.date.localeCompare(b.date) || taskSort(a, b));
+    if (upcoming.length) {
+      tasksHTML += `<div class="section-title">Домашка на неделю <small>${upcoming.length}</small></div>
+        <div class="card">${upcoming.map((t) => taskHTML(t, { showDate: true })).join('')}</div>`;
+    }
+  }
+
   const weekLabel = w.inSemester
     ? `<span class="pill">${w.n} неделя</span><span class="pill gray">${w.numerator ? 'Числитель' : 'Знаменатель'}</span>`
     : w.session ? '<span class="pill danger">Сессия</span>' : w.vacation ? '<span class="pill gray">Каникулы</span>' : '';
