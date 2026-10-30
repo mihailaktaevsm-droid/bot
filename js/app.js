@@ -206,15 +206,44 @@ function kmForWeek(sem, week) {
   return out.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind) || a.subject.localeCompare(b.subject, 'ru'));
 }
 
+// срок контрольного: первая пара по предмету на этой неделе, иначе пятница
+function kmDue(sem, e) {
+  const [mon] = weekDates(sem, e.week);
+  for (let i = 0; i < 6; i++) {
+    const d = addDays(mon, i);
+    if (lessonsFor(d).some((l) => l.subject === e.subject)) return d;
+  }
+  return addDays(mon, 4);
+}
+
+// невыполненные контрольные текущей недели и следующих — со сроками
+function upcomingKM(days) {
+  const today = todayISO();
+  const w = weekInfo(today);
+  if (!w.sem || !w.inSemester) return [];
+  const limit = addDays(today, days);
+  const out = [];
+  for (let k = w.n; k <= w.sem.weeks; k++) {
+    if (weekDates(w.sem, k)[0] > limit) break;
+    for (const e of kmForWeek(w.sem, k)) {
+      if (state.kmDone[e.id]) continue;
+      const date = kmDue(w.sem, e);
+      if (date <= limit) out.push({ ...e, date });
+    }
+  }
+  return out;
+}
+
 function kmHTML(e) {
   const k = KM_KINDS[e.kind] || { label: e.kind, color: 'var(--accent)' };
   const done = !!state.kmDone[e.id];
+  const late = e.date && !done && e.date < todayISO();
   return `
     <div class="task km ${done ? 'done' : ''}">
       <button class="check" data-action="toggle-km" data-id="${esc(e.id)}" aria-label="Готово">${CHECK_SVG}</button>
       <div class="body">
         <div class="title"><span class="km-tag" style="--c:${k.color}">${esc(e.kind)}</span>${esc(e.subject)}</div>
-        <div class="sub"><span>${k.label}</span></div>
+        <div class="sub"><span>${k.label}</span>${e.date ? `<span>·</span><span class="${late ? 'late' : ''}">к ${esc(fmtRel(e.date))}</span>` : ''}</div>
       </div>
     </div>`;
 }
@@ -640,7 +669,7 @@ function renderDay() {
     ? `<span class="pill">${w.n} неделя</span><span class="pill gray">${w.numerator ? 'Числитель' : 'Знаменатель'}</span>`
     : w.session ? '<span class="pill danger">Сессия</span>' : w.vacation ? '<span class="pill gray">Каникулы</span>' : '';
 
-  const kms = w.inSemester ? kmForWeek(w.sem, w.n) : [];
+  const kms = w.inSemester ? kmForWeek(w.sem, w.n).map((e) => ({ ...e, date: kmDue(w.sem, e) })) : [];
   const kmLeft = kms.filter((e) => !state.kmDone[e.id]).length;
   const kmBlock = kms.length ? `
       <div class="section-title">Контрольные на неделе <small>${kmLeft ? `осталось ${kmLeft}` : 'всё сдано'}</small></div>
@@ -673,26 +702,33 @@ function renderDay() {
 function renderHW() {
   const hw = state.tasks.filter((t) => t.subject);
   const active = hw.filter((t) => !t.done);
+  const km = upcomingKM(14);
   const today = todayISO();
   const tomorrow = addDays(today, 1);
   const sunday = addDays(mondayOf(today), 6);
 
   let body = '';
   if (ui.hwMode === 'due') {
+    // свои задания + контрольные из учебного плана на 2 недели вперёд
+    const all = [
+      ...active.map((t) => ({ date: t.date, t })),
+      ...km.map((e) => ({ date: e.date, e })),
+    ];
     const groups = [
-      { title: 'Просрочено', cls: 'danger', items: active.filter((t) => t.date < today) },
-      { title: 'К сегодня', items: active.filter((t) => t.date === today) },
-      { title: 'К завтра', items: active.filter((t) => t.date === tomorrow) },
-      { title: 'На этой неделе', items: active.filter((t) => t.date > tomorrow && t.date <= sunday) },
-      { title: 'Позже', items: active.filter((t) => t.date > sunday && t.date > tomorrow) },
+      { title: 'Просрочено', cls: 'danger', items: all.filter((x) => x.date < today) },
+      { title: 'К сегодня', items: all.filter((x) => x.date === today) },
+      { title: 'К завтра', items: all.filter((x) => x.date === tomorrow) },
+      { title: 'На этой неделе', items: all.filter((x) => x.date > tomorrow && x.date <= sunday) },
+      { title: 'Позже', items: all.filter((x) => x.date > sunday && x.date > tomorrow) },
     ];
     for (const g of groups) {
       if (!g.items.length) continue;
-      g.items.sort((a, b) => a.date.localeCompare(b.date) || taskSort(a, b));
+      g.items.sort((a, b) => a.date.localeCompare(b.date) || (a.t && b.t ? taskSort(a.t, b.t) : a.t ? -1 : b.t ? 1 : 0));
       body += `<div class="section-title ${g.cls || ''}">${g.title} <small>${g.items.length}</small></div>
-        <div class="card">${g.items.map((t) => taskHTML(t, { showDate: true })).join('')}</div>`;
+        <div class="card">${g.items.map((x) => (x.t ? taskHTML(x.t, { showDate: true }) : kmHTML(x.e))).join('')}</div>`;
     }
-    if (!active.length) body += emptyHTML('🎓', 'Вся домашка сделана!<br>Добавь новую через <b>+</b> или нажав на пару.');
+    if (!all.length) body += emptyHTML('🎓', 'Вся домашка сделана!<br>Добавь новую через <b>+</b> или нажав на пару.');
+    if (km.length) body += '<div class="list-foot">ДЗ, РК и модули из учебного плана показаны на 2 недели вперёд. Весь семестр — во вкладке «Контрольные».</div>';
     const doneList = hw.filter((t) => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
     if (doneList.length) {
       body += `<div class="section-title"><span>Выполнено <small>${doneList.length}</small></span>
@@ -730,7 +766,7 @@ function renderHW() {
     <div class="fade-in">
       <div class="header"><div>
         <h1>Домашка</h1>
-        <div class="subtitle">${active.length ? `${active.length} ${plural(active.length, 'задание', 'задания', 'заданий')} не сделано` : 'всё сделано'}</div>
+        <div class="subtitle">${active.length + km.length ? `${active.length + km.length} ${plural(active.length + km.length, 'задание', 'задания', 'заданий')} не сделано` : 'всё сделано'}</div>
       </div></div>
       <div class="segmented">
         <button class="${ui.hwMode === 'due' ? 'active' : ''}" data-action="hw-mode" data-mode="due">По сроку</button>
