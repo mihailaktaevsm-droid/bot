@@ -256,7 +256,10 @@ def main() -> int:
         return 1
     if not os.environ.get("TELEGRAM_CHAT_ID"):
         print(f"Чат найден: {chat}. Сохрани его в секрет TELEGRAM_CHAT_ID, иначе через сутки бот его забудет.")
-    res = tg(token, "sendMessage", {"chat_id": chat, "text": text, "parse_mode": "HTML", "disable_web_page_preview": "true"})
+    app_url = os.environ.get("APP_URL", "").strip() or "https://mihailaktaevsm-droid.github.io/bot/"
+    keyboard = {"inline_keyboard": [[{"text": "📖 Открыть ежедневник", "web_app": {"url": app_url}}]]}
+    res = tg(token, "sendMessage", {"chat_id": chat, "text": text, "parse_mode": "HTML",
+                                    "disable_web_page_preview": "true", "reply_markup": json.dumps(keyboard)})
     print("Отправлено" if res.get("ok") else f"Ошибка Telegram: {res}")
     return 0 if res.get("ok") else 1
 

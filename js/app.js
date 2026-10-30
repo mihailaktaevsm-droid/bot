@@ -109,6 +109,7 @@ function load() {
       settings: { ...d.settings, ...(s.settings || {}) },
       schedule: { ...d.schedule, ...(s.schedule || {}) },
       kmDone: s.kmDone && typeof s.kmDone === 'object' ? s.kmDone : {},
+      savedAt: s.savedAt || 0,
     };
   } catch (e) {
     return defaultState();
@@ -116,9 +117,15 @@ function load() {
 }
 
 let state = load();
-function save() {
+function saveLocal() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
   catch (e) { toast('Не удалось сохранить: память переполнена'); }
+}
+// изменение данных пользователя: помечаем время и отправляем в облако Telegram (если открыто там)
+function save() {
+  state.savedAt = Date.now();
+  saveLocal();
+  cloudSave();
 }
 
 const ui = {
@@ -419,7 +426,7 @@ function applySchedule(lessons, meta) {
     title: meta.title || state.schedule.title || '',
   };
   if (meta.uuid && !state.settings.lksUuid) state.settings.lksUuid = meta.uuid;
-  save();
+  saveLocal(); // расписание приходит из ЛКС само, в облако его не кладём
 }
 
 function extractUuid(s) {
@@ -893,7 +900,7 @@ function renderSettings() {
         <label class="row accent">Восстановить из копии<input type="file" accept="application/json,.json" data-action-change="import"></label>
         <button class="row danger" data-action="clear-done" ${doneCount ? '' : 'disabled'}>Удалить выполненные (${doneCount})</button>
       </div>
-      <div class="list-foot">Все задачи хранятся только на этом телефоне. Время от времени сохраняй резервную копию в «Файлы».</div>
+      <div class="list-foot">${tg ? 'В Telegram задачи хранятся в облаке Telegram и одинаковы на всех твоих устройствах. С приложением на экране «Домой» они не синхронизируются — перенести можно через резервную копию.' : 'Все задачи хранятся только на этом телефоне. Время от времени сохраняй резервную копию в «Файлы».'}</div>
 
       <div class="list-label">Как установить на iPhone</div>
       <div class="list"><div class="row" style="display:block;line-height:1.5;font-size:15px">
@@ -938,6 +945,7 @@ function openSheet(renderFn) {
   sheet.innerHTML = '<div class="grabber"></div>' + renderFn();
   sheet.scrollTop = 0;
   requestAnimationFrame(() => { sheet.classList.add('open'); backdrop.classList.add('open'); });
+  if (tg) tg.BackButton.show();
 }
 function rerenderSheet() { if (sheetRender) sheet.innerHTML = '<div class="grabber"></div>' + sheetRender(); }
 function closeSheet() {
@@ -947,6 +955,7 @@ function closeSheet() {
   sheetRender = null;
   ui.draft = null;
   ui.lessonDraft = null;
+  if (tg) tg.BackButton.hide();
 }
 
 // смахивание шторки вниз
@@ -1411,6 +1420,97 @@ function tick() {
 }
 setInterval(tick, 60000);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) tick(); });
+
+/* ---------------- Telegram Mini App ---------------- */
+
+// Внутри Telegram задачи синхронизируются через Telegram CloudStorage:
+// одни и те же данные на телефоне и компьютере. Значение ключа — до 4096 символов,
+// поэтому состояние режется на куски st_0, st_1, … и их число лежит в st_n.
+let tg = null;
+let cloudReady = false;
+let cloudTimer = null;
+const CLOUD_CHUNK = 4000;
+
+function cloudPayload() {
+  return JSON.stringify({
+    savedAt: state.savedAt || 0,
+    tasks: state.tasks,
+    settings: state.settings,
+    kmDone: state.kmDone,
+    manual: state.schedule.lessons.filter((l) => l.manual),
+  });
+}
+
+function cloudSave() {
+  if (!tg || !cloudReady) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(() => {
+    const data = cloudPayload();
+    const n = Math.max(1, Math.ceil(data.length / CLOUD_CHUNK));
+    for (let i = 0; i < n; i++) tg.CloudStorage.setItem('st_' + i, data.slice(i * CLOUD_CHUNK, (i + 1) * CLOUD_CHUNK));
+    tg.CloudStorage.setItem('st_n', String(n));
+  }, 700);
+}
+
+function cloudLoad() {
+  const cs = tg.CloudStorage;
+  cs.getItem('st_n', (err, nStr) => {
+    const n = Number(nStr) || 0;
+    if (err || !n) { cloudReady = true; if (state.savedAt) cloudSave(); return; }
+    const keys = Array.from({ length: n }, (_, i) => 'st_' + i);
+    cs.getItems(keys, (err2, vals) => {
+      cloudReady = true;
+      if (err2) return;
+      try {
+        const data = JSON.parse(keys.map((k) => vals[k] || '').join(''));
+        if ((data.savedAt || 0) > (state.savedAt || 0)) {
+          const d = defaultState();
+          state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+          state.settings = { ...d.settings, ...(data.settings || {}) };
+          state.kmDone = data.kmDone || {};
+          state.schedule.lessons = [...state.schedule.lessons.filter((l) => !l.manual), ...(data.manual || [])];
+          state.savedAt = data.savedAt;
+          saveLocal();
+          if (!sheetRender) render();
+        } else if ((state.savedAt || 0) > (data.savedAt || 0)) {
+          cloudSave();
+        }
+      } catch (e) { /* повреждённые данные в облаке — оставляем локальные */ }
+    });
+  });
+}
+
+function applyTelegramTheme() {
+  const dark = tg.colorScheme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  try {
+    tg.setHeaderColor(dark ? '#000000' : '#f2f2f7');
+    tg.setBackgroundColor(dark ? '#000000' : '#f2f2f7');
+    if (tg.setBottomBarColor) tg.setBottomBarColor(dark ? '#000000' : '#f2f2f7');
+  } catch (e) { /* старые версии Telegram */ }
+}
+
+function initTelegram() {
+  const app = window.Telegram && window.Telegram.WebApp;
+  if (!app || !app.initData) return; // скрипт загрузился, но мы не в Telegram
+  tg = app;
+  document.documentElement.classList.add('tg');
+  tg.ready();
+  tg.expand();
+  if (tg.isVersionAtLeast && tg.isVersionAtLeast('7.7') && tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  applyTelegramTheme();
+  tg.onEvent('themeChanged', applyTelegramTheme);
+  tg.BackButton.onClick(closeSheet);
+  if (tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9')) cloudLoad();
+}
+
+// SDK грузим только когда страницу открыл Telegram — в Safari он не нужен
+if (/tgWebApp/.test(location.hash + location.search) || window.TelegramWebviewProxy || window.TelegramWebview) {
+  const s = document.createElement('script');
+  s.src = 'https://telegram.org/js/telegram-web-app.js';
+  s.onload = initTelegram;
+  document.head.appendChild(s);
+}
 
 /* ---------------- старт ---------------- */
 
