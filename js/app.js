@@ -94,6 +94,7 @@ function defaultState() {
     tasks: [],
     settings: { group: DEFAULT_GROUP, semesterStart: guessSemesterStart(), weeks: 18, lksUuid: '', hidden: ['ФКиС'] },
     schedule: { lessons: [], updatedAt: null, fetchedAt: null, source: null, title: '' },
+    kmDone: {},
   };
 }
 
@@ -107,6 +108,7 @@ function load() {
       tasks: Array.isArray(s.tasks) ? s.tasks : [],
       settings: { ...d.settings, ...(s.settings || {}) },
       schedule: { ...d.schedule, ...(s.schedule || {}) },
+      kmDone: s.kmDone && typeof s.kmDone === 'object' ? s.kmDone : {},
     };
   } catch (e) {
     return defaultState();
@@ -125,6 +127,7 @@ const ui = {
   lastToday: todayISO(),
   hwMode: 'due',
   showDone: false,
+  showPastKm: false,
   openSubjects: new Set(),
   weekParity: null,
   draft: null,
@@ -136,11 +139,84 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 
 /* ---------------- расписание ---------------- */
 
+// семестр из учебного плана, в который попадает дата (вместе с сессией и каникулами)
+function planSemester(s) {
+  const sems = typeof STUDY_PLAN !== 'undefined' ? STUDY_PLAN.semesters : [];
+  let cur = null;
+  for (const sem of sems) if (s >= mondayOf(sem.start)) cur = sem;
+  return cur && s <= cur.vacation[1] ? cur : null;
+}
+
 function weekInfo(s) {
-  const start = mondayOf(state.settings.semesterStart || guessSemesterStart());
-  const n = Math.floor(diffDays(start, s) / 7) + 1;
-  const weeks = Number(state.settings.weeks) || 18;
-  return { n, numerator: n % 2 === 1, inSemester: n >= 1 && n <= weeks };
+  const sem = planSemester(s);
+  if (sem) {
+    const n = Math.floor(diffDays(mondayOf(sem.start), s) / 7) + 1;
+    return {
+      n, sem,
+      numerator: n % 2 === 1,
+      inSemester: s < sem.session[0],
+      session: s >= sem.session[0] && s <= sem.session[1],
+      vacation: s >= sem.vacation[0],
+    };
+  }
+  const n = Math.floor(diffDays(mondayOf(state.settings.semesterStart || guessSemesterStart()), s) / 7) + 1;
+  return { n, sem: null, numerator: n % 2 === 1, inSemester: n >= 1 && n <= (Number(state.settings.weeks) || 18) };
+}
+
+function fmtRange(a, b) {
+  const da = parse(a), db = parse(b);
+  return da.getMonth() === db.getMonth()
+    ? `${da.getDate()}–${db.getDate()} ${MONTHS_SHORT[db.getMonth()]}`
+    : `${da.getDate()} ${MONTHS_SHORT[da.getMonth()]} – ${db.getDate()} ${MONTHS_SHORT[db.getMonth()]}`;
+}
+
+/* --- контрольные мероприятия из учебного плана --- */
+
+const KM_KINDS = {
+  'ДЗ': { label: 'Сдача ДЗ', color: '#ff9500' },
+  'РК': { label: 'Рубежный контроль', color: '#ff3b30' },
+  'КР': { label: 'Контрольная работа', color: '#ff3b30' },
+  'М': { label: 'Закрытие модуля', color: '#a35cff' },
+  'Р': { label: 'Реферат', color: '#2f6bff' },
+};
+const EXAM_LABELS = { 'экз': 'Экзамен', 'р.экз': 'Экзамен (можно по рейтингу)', 'д.зач': 'Дифференцированный зачёт', 'зач': 'Зачёт', 'упм': 'Практика' };
+
+function planSubjects(sem) {
+  return sem ? sem.subjects.filter((x) => !isHidden(x.name) && !(x.short && isHidden(x.short))) : [];
+}
+
+function planSubject(name, sem) {
+  return planSubjects(sem || weekInfo(todayISO()).sem).find((x) => x.name === name) || null;
+}
+
+function weekDates(sem, week) {
+  const mon = addDays(mondayOf(sem.start), 7 * (week - 1));
+  return [mon, addDays(mon, 6)];
+}
+
+function kmForWeek(sem, week) {
+  if (!sem) return [];
+  const out = [];
+  for (const subj of planSubjects(sem)) {
+    for (const [w, kind] of subj.events) {
+      if (w === week) out.push({ id: `${sem.n}|${subj.name}|${w}|${kind}`, subject: subj.name, kind, week: w });
+    }
+  }
+  const order = ['РК', 'КР', 'ДЗ', 'Р', 'М'];
+  return out.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind) || a.subject.localeCompare(b.subject, 'ru'));
+}
+
+function kmHTML(e) {
+  const k = KM_KINDS[e.kind] || { label: e.kind, color: 'var(--accent)' };
+  const done = !!state.kmDone[e.id];
+  return `
+    <div class="task km ${done ? 'done' : ''}">
+      <button class="check" data-action="toggle-km" data-id="${esc(e.id)}" aria-label="Готово">${CHECK_SVG}</button>
+      <div class="body">
+        <div class="title"><span class="km-tag" style="--c:${k.color}">${esc(e.kind)}</span>${esc(e.subject)}</div>
+        <div class="sub"><span>${k.label}</span></div>
+      </div>
+    </div>`;
 }
 
 function weekMatches(week, numerator) {
@@ -172,6 +248,7 @@ function lessonsForWeekday(day, numerator) {
 function allSubjects() {
   const set = new Set();
   visibleLessons().forEach((l) => l.subject && set.add(l.subject));
+  planSubjects(weekInfo(todayISO()).sem).forEach((x) => x.exam !== 'упм' && set.add(x.name));
   state.tasks.forEach((t) => t.subject && set.add(t.subject));
   return [...set].sort((a, b) => a.localeCompare(b, 'ru'));
 }
@@ -549,7 +626,13 @@ function renderDay() {
 
   const weekLabel = w.inSemester
     ? `<span class="pill">${w.n} неделя</span><span class="pill gray">${w.numerator ? 'Числитель' : 'Знаменатель'}</span>`
-    : '';
+    : w.session ? '<span class="pill danger">Сессия</span>' : w.vacation ? '<span class="pill gray">Каникулы</span>' : '';
+
+  const kms = w.inSemester ? kmForWeek(w.sem, w.n) : [];
+  const kmLeft = kms.filter((e) => !state.kmDone[e.id]).length;
+  const kmBlock = kms.length ? `
+      <div class="section-title">Контрольные на неделе <small>${kmLeft ? `осталось ${kmLeft}` : 'всё сдано'}</small></div>
+      <div class="card">${kms.map(kmHTML).join('')}</div>` : '';
 
   return `
     <div class="fade-in">
@@ -568,6 +651,7 @@ function renderDay() {
       <div class="strip" id="strip">${strip}</div>
       <div class="section-title">Пары <small>${lessonsSub}</small></div>
       ${lessonsHTML}
+      ${kmBlock}
       ${tasksHTML}
     </div>`;
 }
@@ -603,6 +687,8 @@ function renderHW() {
         <button class="link-btn" data-action="toggle-done">${ui.showDone ? 'Скрыть' : 'Показать'}</button></div>`;
       if (ui.showDone) body += `<div class="card">${doneList.slice(0, 50).map((t) => taskHTML(t, { showDate: true })).join('')}</div>`;
     }
+  } else if (ui.hwMode === 'km') {
+    body = renderKM();
   } else {
     const subjects = allSubjects();
     if (!subjects.length) body = emptyHTML('📚', 'Предметы появятся, когда загрузится расписание.');
@@ -636,10 +722,42 @@ function renderHW() {
       </div></div>
       <div class="segmented">
         <button class="${ui.hwMode === 'due' ? 'active' : ''}" data-action="hw-mode" data-mode="due">По сроку</button>
-        <button class="${ui.hwMode === 'subject' ? 'active' : ''}" data-action="hw-mode" data-mode="subject">По предметам</button>
+        <button class="${ui.hwMode === 'subject' ? 'active' : ''}" data-action="hw-mode" data-mode="subject">Предметы</button>
+        <button class="${ui.hwMode === 'km' ? 'active' : ''}" data-action="hw-mode" data-mode="km">Контрольные</button>
       </div>
       ${body}
     </div>`;
+}
+
+function renderKM() {
+  const today = todayISO();
+  const w = weekInfo(today);
+  const sem = w.sem;
+  if (!sem) return emptyHTML('📋', 'Учебный план на эти даты не загружен.');
+  const cur = w.inSemester ? w.n : w.session || w.vacation ? sem.weeks + 1 : 1;
+  let html = '';
+
+  const from = ui.showPastKm ? 1 : cur;
+  for (let k = from; k <= sem.weeks; k++) {
+    const items = kmForWeek(sem, k);
+    if (!items.length) continue;
+    const [a, b] = weekDates(sem, k);
+    const left = items.filter((e) => !state.kmDone[e.id]).length;
+    html += `<div class="section-title ${k === cur ? 'accent' : ''}">${k} неделя${k === cur ? ' · сейчас' : ''} <small>${fmtRange(a, b)}${left ? '' : ' ✓'}</small></div>
+      <div class="card">${items.map(kmHTML).join('')}</div>`;
+  }
+  if (cur > 1) html += `<button class="btn secondary" data-action="toggle-past-km">${ui.showPastKm ? 'Скрыть прошедшие недели' : 'Показать прошедшие недели'}</button>`;
+
+  const subj = planSubjects(sem).filter((x) => x.exam !== 'упм');
+  const exams = subj.filter((x) => /экз/.test(x.exam));
+  const credits = subj.filter((x) => /зач/.test(x.exam));
+  html += `<div class="section-title">Сессия <small>${fmtRange(sem.session[0], sem.session[1])}</small></div>
+    <div class="card">
+      ${exams.map((x) => `<div class="row"><span class="label">${esc(x.name)}</span><span class="value">${x.exam === 'р.экз' ? 'экз · рейтинг' : 'экзамен'}</span></div>`).join('')}
+      ${credits.map((x) => `<div class="row"><span class="label">${esc(x.name)}</span><span class="value">${x.exam === 'д.зач' ? 'дифф. зачёт' : 'зачёт'}</span></div>`).join('')}
+    </div>
+    <div class="list-foot">ДЗ — сдача домашнего задания, РК — рубежный контроль, КР — контрольная, М — закрытие модуля. «Экзамен по рейтингу» можно получить автоматом за баллы в семестре.</div>`;
+  return html;
 }
 
 /* ---------------- вкладка «Расписание» ---------------- */
@@ -697,11 +815,13 @@ function renderSettings() {
       <div class="list-label">Учёба</div>
       <div class="list">
         <label class="row"><span class="label">Группа</span><input type="text" data-setting="group" value="${esc(s.group)}" autocapitalize="characters"></label>
-        <label class="row"><span class="label">Начало семестра</span><input type="date" data-setting="semesterStart" value="${esc(s.semesterStart)}"></label>
-        <label class="row"><span class="label">Недель в семестре</span><input type="number" inputmode="numeric" data-setting="weeks" value="${esc(s.weeks)}" style="max-width:70px"></label>
-        <div class="row"><span class="label">Сейчас</span><span class="value">${w.inSemester ? `${w.n} неделя, ${w.numerator ? 'числитель' : 'знаменатель'}` : 'вне семестра'}</span></div>
+        <div class="row"><span class="label">Сейчас</span><span class="value">${w.sem ? `${w.sem.n} семестр, ` : ''}${w.inSemester ? `${w.n} неделя, ${w.numerator ? 'числитель' : 'знаменатель'}` : w.session ? 'сессия' : w.vacation ? 'каникулы' : 'вне семестра'}</span></div>
+        ${w.sem ? `<div class="row"><span class="label">Семестр</span><span class="value">${fmtRange(w.sem.start, addDays(w.sem.session[0], -1))}</span></div>
+        <div class="row"><span class="label">Сессия</span><span class="value">${fmtRange(w.sem.session[0], w.sem.session[1])}</span></div>
+        <div class="row"><span class="label">Каникулы</span><span class="value">${fmtRange(w.sem.vacation[0], w.sem.vacation[1])}</span></div>` : `
+        <label class="row"><span class="label">Начало семестра</span><input type="date" data-setting="semesterStart" value="${esc(s.semesterStart)}"></label>`}
       </div>
-      <div class="list-foot">Первая неделя семестра — числитель. Если чётность не совпадает с ЛКС, поправь дату начала семестра.</div>
+      <div class="list-foot">${typeof STUDY_PLAN !== 'undefined' ? esc(STUDY_PLAN.title) + '. ' : ''}Нечётные недели — числитель, чётные — знаменатель.</div>
 
       <div class="list-label">Расписание</div>
       <div class="list">
@@ -904,6 +1024,19 @@ function openLessonSheet(id, date) {
         ${l.room ? `<div class="row"><span class="label">Аудитория</span><span class="value">${esc(l.room)}</span></div>` : ''}
         ${l.teacher ? `<div class="row"><span class="label">Преподаватель</span><span class="value">${esc(l.teacher)}</span></div>` : ''}
       </div>
+      ${(() => {
+        const w = weekInfo(today);
+        const ps = planSubject(l.subject, w.sem);
+        if (!ps) return '';
+        const curW = w.inSemester ? w.n : 99;
+        const next = ps.events.filter(([k]) => k >= curW);
+        return `
+      <div class="field-label">По учебному плану</div>
+      <div class="info-grid">
+        <div class="row"><span class="label">Аттестация</span><span class="value">${EXAM_LABELS[ps.exam] || esc(ps.exam)}</span></div>
+        ${next.length ? `<div class="row" style="align-items:flex-start"><span class="label">Контрольные</span><span class="value">${next.map(([k, kind]) => `${k} нед — ${{ 'М': 'модуль', 'КР': 'контрольная', 'Р': 'реферат' }[kind] || kind}`).join('<br>')}</span></div>` : ''}
+      </div>`;
+      })()}
       <div class="field-label">Домашка по предмету</div>
       ${hw.length ? `<div class="card">${hw.map((t) => taskHTML(t, { showDate: true })).join('')}</div>` : '<div class="card"><div class="empty" style="padding:16px">Ничего не задано</div></div>'}
       <button class="btn" data-action="add-hw" data-subject="${esc(l.subject)}" ${target ? `data-date="${target}"` : ''}>＋ Добавить ДЗ${target ? ` к ${esc(fmtRel(target))}` : ''}</button>
@@ -1021,6 +1154,7 @@ function importData(file) {
         tasks: data.tasks,
         settings: { ...d.settings, ...(data.settings || {}) },
         schedule: { ...d.schedule, ...(data.schedule || {}) },
+        kmDone: data.kmDone || {},
       };
       save();
       render();
@@ -1102,6 +1236,16 @@ const actions = {
 
   'hw-mode': (el) => { ui.hwMode = el.dataset.mode; render(); },
   'toggle-done': () => { ui.showDone = !ui.showDone; render(); },
+  'toggle-past-km': () => { ui.showPastKm = !ui.showPastKm; render(); },
+  'toggle-km': (el) => {
+    const id = el.dataset.id;
+    if (state.kmDone[id]) delete state.kmDone[id]; else state.kmDone[id] = Date.now();
+    save();
+    const row = el.closest('.task');
+    row && row.classList.toggle('done');
+    if (state.kmDone[id] && navigator.vibrate) navigator.vibrate(10);
+    setTimeout(render, 280);
+  },
   'toggle-subject': (el) => {
     const s = el.dataset.subject;
     ui.openSubjects.has(s) ? ui.openSubjects.delete(s) : ui.openSubjects.add(s);

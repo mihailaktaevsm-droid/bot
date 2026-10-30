@@ -62,12 +62,14 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .header h1::first-letter { text-transform: uppercase; }
 .subtitle { color: var(--text-2); font-size: 15px; margin-top: 4px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .pill { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-size: 13px; font-weight: 600; }
+.pill.danger { background: rgba(255, 59, 48, 0.14); color: var(--danger); }
 .pill.gray { background: var(--card-2); color: var(--text-2); }
 .link-btn { color: var(--accent); font-weight: 600; font-size: 16px; padding: 6px 2px; white-space: nowrap; }
 
 .section-title { display: flex; align-items: center; justify-content: space-between; font-size: 20px; font-weight: 700; margin: 22px 4px 10px; }
 .section-title small { font-size: 15px; font-weight: 500; color: var(--text-2); }
 .section-title.danger { color: var(--danger); }
+.section-title.accent { color: var(--accent); }
 
 /* ---------- week strip ---------- */
 .strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; background: var(--card); border-radius: var(--radius); padding: 8px 6px; box-shadow: var(--shadow); touch-action: pan-y; }
@@ -119,6 +121,9 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .task .sub .subj { font-weight: 600; color: var(--c, var(--text-2)); }
 .task .sub .late { color: var(--danger); font-weight: 600; }
 .task .note { font-size: 14px; color: var(--text-2); margin-top: 3px; white-space: pre-wrap; }
+.km-tag { display: inline-block; min-width: 30px; text-align: center; font-size: 12px; font-weight: 800; padding: 2px 6px; margin-right: 8px; border-radius: 6px; vertical-align: 1px; color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent); }
+.task.done .km-tag { opacity: .5; }
+.info-grid .row .value { max-width: 65%; }
 .task .flag { color: var(--danger); font-weight: 800; }
 
 /* segmented */
