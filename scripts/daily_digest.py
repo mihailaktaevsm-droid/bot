@@ -8,7 +8,7 @@
   TELEGRAM_BOT_TOKEN — токен бота от @BotFather (обязательно)
   TELEGRAM_CHAT_ID   — куда слать, можно несколько через запятую; плюс все,
                        кто написал боту /start за последние сутки
-  HIDDEN             — скрытые предметы через запятую (по умолчанию ФКиС)
+  HIDDEN             — скрытые предметы через запятую (по умолчанию ФКиС, УТП МТ13)
   TODAY              — дата YYYY-MM-DD вместо сегодняшней (для проверки)
   DRY_RUN=1          — только напечатать сообщение, не отправлять
 """
@@ -56,7 +56,7 @@ def load_plan() -> dict:
 
 
 def hidden_list() -> list:
-    return [h.strip().lower() for h in os.environ.get("HIDDEN", "ФКиС").split(",") if h.strip()]
+    return [h.strip().lower() for h in os.environ.get("HIDDEN", "ФКиС,УТП МТ13").split(",") if h.strip()]
 
 
 def is_hidden(name: str, hidden: list) -> bool:

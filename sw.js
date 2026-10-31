@@ -1,5 +1,5 @@
 // Офлайн-режим: оболочка приложения кэшируется, расписание берётся из сети, если она есть.
-const CACHE = 'planner-v4';
+const CACHE = 'planner-v5';
 const SHELL = ['./', 'index.html', 'css/style.css', 'js/plan.js', 'js/app.js', 'manifest.webmanifest', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {

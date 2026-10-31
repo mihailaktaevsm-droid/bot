@@ -92,10 +92,19 @@ function fmtDuration(min) {
 function defaultState() {
   return {
     tasks: [],
-    settings: { group: DEFAULT_GROUP, semesterStart: guessSemesterStart(), weeks: 18, lksUuid: '', hidden: ['ФКиС'] },
+    settings: { group: DEFAULT_GROUP, semesterStart: guessSemesterStart(), weeks: 18, lksUuid: '', hidden: ['ФКиС', 'УТП МТ13'], hiddenV: 2 },
     schedule: { lessons: [], updatedAt: null, fetchedAt: null, source: null, title: '' },
     kmDone: {},
   };
+}
+
+// новые предметы, скрытые по умолчанию, добавляем и тем, у кого настройки уже сохранены
+function migrateSettings(st) {
+  if ((st.hiddenV || 1) < 2) {
+    st.hidden = [...new Set([...(st.hidden || []), 'УТП МТ13'])];
+    st.hiddenV = 2;
+  }
+  return st;
 }
 
 function load() {
@@ -106,7 +115,7 @@ function load() {
     const d = defaultState();
     return {
       tasks: Array.isArray(s.tasks) ? s.tasks : [],
-      settings: { ...d.settings, ...(s.settings || {}) },
+      settings: migrateSettings({ ...d.settings, ...(s.settings || {}), hiddenV: (s.settings || {}).hiddenV || 1 }),
       schedule: { ...d.schedule, ...(s.schedule || {}) },
       kmDone: s.kmDone && typeof s.kmDone === 'object' ? s.kmDone : {},
       savedAt: s.savedAt || 0,
@@ -1209,7 +1218,7 @@ function importData(file) {
       const d = defaultState();
       state = {
         tasks: data.tasks,
-        settings: { ...d.settings, ...(data.settings || {}) },
+        settings: migrateSettings({ ...d.settings, ...(data.settings || {}), hiddenV: (data.settings || {}).hiddenV || 1 }),
         schedule: { ...d.schedule, ...(data.schedule || {}) },
         kmDone: data.kmDone || {},
       };
@@ -1486,7 +1495,7 @@ function cloudLoad() {
         if ((data.savedAt || 0) > (state.savedAt || 0)) {
           const d = defaultState();
           state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
-          state.settings = { ...d.settings, ...(data.settings || {}) };
+          state.settings = migrateSettings({ ...d.settings, ...(data.settings || {}), hiddenV: (data.settings || {}).hiddenV || 1 });
           state.kmDone = data.kmDone || {};
           state.schedule.lessons = [...state.schedule.lessons.filter((l) => !l.manual), ...(data.manual || [])];
           state.savedAt = data.savedAt;
