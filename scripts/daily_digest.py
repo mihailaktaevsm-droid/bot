@@ -6,8 +6,9 @@
 
 Переменные окружения:
   TELEGRAM_BOT_TOKEN — токен бота от @BotFather (обязательно)
-  TELEGRAM_CHAT_ID   — куда слать, можно несколько через запятую; плюс все,
-                       кто написал боту /start за последние сутки
+  TELEGRAM_CHAT_ID   — (необязательно) куда слать, можно несколько через запятую.
+                       Ещё бот шлёт всем из telegram_chats.txt и всем, кто нажал
+                       /start за сутки — их он сам дописывает в этот файл.
   HIDDEN             — скрытые предметы через запятую (по умолчанию ФКиС, УТП МТ13)
   TODAY              — дата YYYY-MM-DD вместо сегодняшней (для проверки)
   DRY_RUN=1          — только напечатать сообщение, не отправлять
@@ -23,6 +24,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 MSK = dt.timezone(dt.timedelta(hours=3))
+CHATS_FILE = ROOT / "telegram_chats.txt"
 
 DOW = ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
 DOW_SHORT = ["пн", "вт", "ср", "чт", "пт", "сб", "вс"]
@@ -252,16 +254,23 @@ def main() -> int:
         print("Нет TELEGRAM_BOT_TOKEN: добавь токен бота в Settings → Secrets and variables → Actions")
         return 1
     # можно несколько аккаунтов: TELEGRAM_CHAT_ID=111111,222222
+    # получатели: секрет TELEGRAM_CHAT_ID + файл telegram_chats.txt + все, кто нажал /start за сутки;
+    # новых бот дописывает в файл сам (workflow потом коммитит его), так что секрет не обязателен
     saved = [c.strip() for c in os.environ.get("TELEGRAM_CHAT_ID", "").replace(";", ",").split(",") if c.strip()]
-    found = find_chats(token)
-    new = [c for c in found if c not in saved]
-    chats = saved + new
+    stored = []
+    if CHATS_FILE.exists():
+        stored = [l.split("#")[0].strip() for l in CHATS_FILE.read_text("utf-8").splitlines()]
+        stored = [c for c in stored if c]
+    known = list(dict.fromkeys(saved + stored))
+    new = [c for c in find_chats(token) if c not in known]
+    chats = known + new
     if not chats:
         print("Не знаю, куда писать: отправь своему боту /start в Telegram и запусти workflow ещё раз")
         return 1
     if new:
-        print(f"Новые чаты: {', '.join(new)}. Сохрани в секрет TELEGRAM_CHAT_ID все через запятую: {','.join(chats)} "
-              "— иначе через сутки бот их забудет.")
+        with CHATS_FILE.open("a", encoding="utf-8") as f:
+            f.writelines(c + "\n" for c in new)
+        print(f"Новые чаты: {', '.join(new)} — запомнил в {CHATS_FILE.name}")
     app_url = os.environ.get("APP_URL", "").strip() or "https://mihailaktaevsm-droid.github.io/bot/"
     keyboard = {"inline_keyboard": [[{"text": "📖 Открыть ежедневник", "web_app": {"url": app_url}}]]}
     ok = True

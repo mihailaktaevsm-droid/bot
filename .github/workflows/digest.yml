@@ -5,6 +5,9 @@ on:
     - cron: "41 3 * * *" # каждый день в 06:41 по Москве (GitHub может задержать на 5–20 минут)
   workflow_dispatch:
 
+permissions:
+  contents: write # чтобы запомнить новых получателей в telegram_chats.txt
+
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -24,3 +27,13 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           HIDDEN: ${{ vars.HIDDEN || 'ФКиС,УТП МТ13' }}
         run: python scripts/daily_digest.py
+      - name: Запомнить новых получателей
+        if: always()
+        run: |
+          if [ -z "$(git status --porcelain telegram_chats.txt)" ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add telegram_chats.txt
+          git commit -m "Новый получатель утренней сводки"
+          git pull --rebase
+          git push
