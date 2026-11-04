@@ -1351,7 +1351,13 @@ const actions = {
   },
 };
 
+const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
 document.addEventListener('click', (e) => {
+  // на компьютере клик по полю даты/времени сам календарь не открывает — открываем явно
+  if (finePointer && e.target.matches && e.target.matches('input[type="date"], input[type="time"]') && e.target.showPicker) {
+    try { e.target.showPicker(); } catch (err) { /* уже открыт или браузер не умеет */ }
+  }
   const tab = e.target.closest('[data-tab]');
   if (tab) { closeSheet(); switchTab(tab.dataset.tab); return; }
   const el = e.target.closest('[data-action]');
@@ -1392,13 +1398,35 @@ sheet.addEventListener('input', (e) => {
   }
 });
 let pickerDirty = false;
+// Поле теряет фокус уже при нажатии на кнопку («Готово»), а сам клик приходит позже.
+// Если перерисовать шторку сразу, кнопка исчезнет и клик потеряется — поэтому ждём,
+// пока палец/кнопка мыши отпущены и клик обработан.
+let pointerIsDown = false;
+document.addEventListener('pointerdown', () => { pointerIsDown = true; }, true);
+document.addEventListener('pointerup', () => setTimeout(() => { pointerIsDown = false; }, 0), true);
+document.addEventListener('pointercancel', () => { pointerIsDown = false; }, true);
+function rerenderWhenIdle() {
+  if (pointerIsDown) setTimeout(rerenderWhenIdle, 50);
+  else rerenderSheet();
+}
 sheet.addEventListener('focusout', (e) => {
   const f = e.target.dataset && e.target.dataset.field;
   if ((f === 'date' || f === 'time') && pickerDirty) {
     pickerDirty = false;
-    setTimeout(rerenderSheet, 0); // после закрытия пикера — пересчитать чипы (например, «Перед парами»)
+    setTimeout(rerenderWhenIdle, 0); // после закрытия пикера — пересчитать чипы (например, «Перед парами»)
   }
 });
+// клавиатура: Esc закрывает окно, стрелки ← → листают дни
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && sheetRender) { closeSheet(); return; }
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
+  if (typing || sheetRender || ui.tab !== 'day' || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    ui.date = addDays(ui.date, e.key === 'ArrowRight' ? 1 : -1);
+    render();
+  }
+});
+
 sheet.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && e.target.dataset.field === 'title') { e.preventDefault(); actions['save-task'](); }
 });

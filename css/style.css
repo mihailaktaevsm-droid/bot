@@ -182,8 +182,8 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 .fab:active { transform: scale(.92); }
 .fab.hidden { display: none; }
 
-.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; justify-content: space-around; padding: 6px 8px var(--safe-bottom); height: calc(var(--tabbar-h) + var(--safe-bottom)); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 0.5px solid var(--line); }
-.tab { flex: 1; max-width: 120px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-3); font-size: 10.5px; font-weight: 600; }
+.tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; display: flex; justify-content: center; padding: 6px 8px var(--safe-bottom); height: calc(var(--tabbar-h) + var(--safe-bottom)); background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(180%) blur(20px); -webkit-backdrop-filter: saturate(180%) blur(20px); border-top: 0.5px solid var(--line); }
+.tab { flex: 1; max-width: 150px; display: flex; flex-direction: column; align-items: center; gap: 2px; color: var(--text-3); font-size: 10.5px; font-weight: 600; }
 .tab svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .tab.active { color: var(--accent); }
 
@@ -231,3 +231,20 @@ button { background: none; border: 0; padding: 0; cursor: pointer; }
 
 .fade-in { animation: fade .22s ease; }
 @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* ---------- компьютер: мышь вместо пальца ---------- */
+[data-action], [data-tab], label.chip, label.row { cursor: pointer; }
+button:disabled { cursor: default; }
+@media (hover: hover) and (pointer: fine) {
+  /* колёсиком ряды чипов вбок не прокрутить — переносим их на новые строки */
+  .chips { flex-wrap: wrap; overflow: visible; }
+  .chip:hover:not(.active) { background: var(--card-2); }
+  .lesson:hover:not(.now), .subject-row:hover, .row.accent:hover, .row.danger:hover { background: var(--card-2); }
+  .task .body:hover .title { color: var(--accent); }
+  .task.done .body:hover .title { color: var(--text-2); }
+  .strip button:hover:not(.selected) .num { background: var(--card-2); }
+  .tab:hover:not(.active) { color: var(--text-2); }
+  .link-btn:hover, .sheet-head button:hover:not(:disabled), .strip-nav button:hover { opacity: .75; }
+  .btn:hover { filter: brightness(1.06); }
+  .sheet { border-radius: 18px 18px 0 0; box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18); }
+}
