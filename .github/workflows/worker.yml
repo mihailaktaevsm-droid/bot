@@ -57,6 +57,7 @@ jobs:
           if [ -z "$(git status --porcelain js/config.js)" ]; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -- worker/wrangler.toml # id KV подставлялся только для развёртывания
           git add js/config.js
           git commit -m "Адрес сервера синхронизации"
           git pull --rebase
