@@ -2,7 +2,7 @@
  "group": "Э5-11/6",
  "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
  "title": "Э5-11/6",
- "fetchedAt": "2026-11-07T03:57:41Z",
+ "fetchedAt": "2026-11-08T03:59:49Z",
  "raw": {
   "data": {
    "link": "https://lks.bmstu.ru/lks-back/srv/v2/ics/fdcc10a2-2cea-11f1-a2a8-005056aae53e",
@@ -288,16 +288,16 @@
      "endTime": "15:35",
      "teachers": [
       {
-       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
-       "lastName": "Лиморенко",
-       "firstName": "Мария",
-       "middleName": "Евгеньевна"
-      },
-      {
        "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
        "lastName": "Горячкина",
        "firstName": "Александра",
        "middleName": "Юрьевна"
+      },
+      {
+       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
+       "lastName": "Лиморенко",
+       "firstName": "Мария",
+       "middleName": "Евгеньевна"
       }
      ],
      "audiences": [
@@ -1139,6 +1139,6 @@
     }
    ]
   },
-  "date": "2026-11-07T05:54:22.936+03:00"
+  "date": "2026-11-08T06:04:59.100+03:00"
  }
 }
