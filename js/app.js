@@ -135,6 +135,7 @@ function save() {
   state.savedAt = Date.now();
   saveLocal();
   cloudSave();
+  serverSave();
 }
 
 const ui = {
@@ -1001,13 +1002,15 @@ function renderSettings() {
       <div class="list-foot">Эти занятия не показываются в расписании, даже после обновления из ЛКС.</div>` : ''}
       <div class="list-foot">Расписание подтягивается само из ЛКС раз в день. Если не вышло: открой своё расписание на lks.bmstu.ru, скопируй ссылку из адресной строки в поле «Ссылка ЛКС», нажми «Открыть расписание в ЛКС», скопируй весь текст страницы и вставь через «Вставить расписание».</div>
 
+      ${syncApi() ? syncSettingsHTML() : ''}
+
       <div class="list-label">Данные</div>
       <div class="list">
         <button class="row accent" data-action="export">Сохранить резервную копию</button>
         <label class="row accent">Восстановить из копии<input type="file" accept="application/json,.json" data-action-change="import"></label>
         <button class="row danger" data-action="clear-done" ${doneCount ? '' : 'disabled'}>Удалить выполненные (${doneCount})</button>
       </div>
-      <div class="list-foot">${tg ? 'В Telegram задачи хранятся в облаке Telegram и одинаковы на всех твоих устройствах. С приложением на экране «Домой» они не синхронизируются — перенести можно через резервную копию.' : 'Все задачи хранятся только на этом телефоне. Время от времени сохраняй резервную копию в «Файлы».'}</div>
+      <div class="list-foot">${syncKey && syncApi() ? 'Задачи синхронизируются через сервер. Резервная копия — на всякий случай.' : tg ? 'В Telegram задачи хранятся в облаке Telegram. Чтобы они совпадали с айфоном и компьютером, включи синхронизацию выше.' : 'Пока синхронизация не включена, задачи хранятся только на этом устройстве. Время от времени сохраняй резервную копию.'}</div>
 
       <div class="list-label">Как установить на iPhone</div>
       <div class="list"><div class="row" style="display:block;line-height:1.5;font-size:15px">
@@ -1018,6 +1021,30 @@ function renderSettings() {
       </div></div>
       <div class="list-foot" style="text-align:center;margin-top:20px">Ежедневник МГТУ · v1.0</div>
     </div>`;
+}
+
+function syncSettingsHTML() {
+  const r = state.settings.remind || {};
+  const status = !syncKey ? 'не подключена' : syncStatus === 'error' ? 'нет связи с сервером' : 'включена ✓';
+  const opt = (v, cur, label) => `<option value="${v}" ${String(cur) === String(v) ? 'selected' : ''}>${label}</option>`;
+  return `
+      <div class="list-label">Синхронизация</div>
+      <div class="list">
+        <div class="row"><span class="label">Статус</span><span class="value">${status}</span></div>
+        ${syncKey ? '<button class="row accent" data-action="share-sync">Скопировать ключ для другого устройства</button>' : ''}
+        <label class="row"><span class="label">${syncKey ? 'Подключить другой ключ' : 'Вставить ключ'}</span><input type="text" data-sync-key placeholder="ключ" autocomplete="off" autocapitalize="off" spellcheck="false"></label>
+      </div>
+      <div class="list-foot">${tg
+        ? 'Задачи хранятся на сервере и видны везде, где введён этот ключ. Скопируй ключ и вставь его в приложении на айфоне или на компьютере («Ещё» → «Вставить ключ»). Со второго аккаунта Telegram тоже можно вставить этот ключ — тогда задачи будут общими.'
+        : 'Ключ берётся в Telegram-боте: открой ежедневник там → «Ещё» → «Скопировать ключ», и вставь сюда. После этого задачи здесь и в Telegram будут одинаковыми.'}</div>
+
+      <div class="list-label">Напоминания в Telegram</div>
+      <div class="list">
+        <label class="row"><span class="label">О парах</span><select data-remind="lessons">${opt('first', r.lessons || 'first', 'перед первой')}${opt('all', r.lessons, 'перед каждой')}${opt('off', r.lessons, 'выключено')}</select></label>
+        <label class="row"><span class="label">За сколько минут</span><select data-remind="leadMin">${opt(10, r.leadMin || 15, '10')}${opt(15, r.leadMin || 15, '15')}${opt(30, r.leadMin || 15, '30')}</select></label>
+        <label class="row"><span class="label">О делах со временем</span><select data-remind="tasks">${opt('on', r.tasks === false ? 'off' : 'on', 'в назначенное время')}${opt('off', r.tasks === false ? 'off' : 'on', 'выключено')}</select></label>
+      </div>
+      <div class="list-foot">Бот напишет перед парой (с тем, что сдавать) и в момент, на который поставлено дело. Работает, когда синхронизация включена.</div>`;
 }
 
 /* ---------------- главный рендер ---------------- */
@@ -1442,6 +1469,7 @@ const actions = {
     save(); render();
   },
   'export': exportData,
+  'share-sync': shareSyncKey,
   'clear-done': () => {
     const n = state.tasks.filter((t) => t.done).length;
     if (!n || !confirm(`Удалить ${n} выполненных задач?`)) return;
@@ -1544,6 +1572,14 @@ view.addEventListener('change', (e) => {
     if (key === 'group' || key === 'lksUuid') refreshSchedule({ silent: true, force: true });
   }
   if (e.target.dataset.actionChange === 'import' && e.target.files[0]) importData(e.target.files[0]);
+  const rk = e.target.dataset.remind;
+  if (rk) {
+    const v = e.target.value;
+    state.settings.remind = { ...(state.settings.remind || {}), [rk]: rk === 'leadMin' ? Number(v) : rk === 'tasks' ? v === 'on' : v };
+    save();
+    toast('Сохранено');
+  }
+  if ('syncKey' in e.target.dataset && e.target.value.trim()) linkKey(e.target.value);
 });
 
 // свайп влево/вправо по дню
@@ -1587,14 +1623,28 @@ let cloudReady = false;
 let cloudTimer = null;
 const CLOUD_CHUNK = 4000;
 
-function cloudPayload() {
-  return JSON.stringify({
+function syncData() {
+  return {
     savedAt: state.savedAt || 0,
     tasks: state.tasks,
     settings: state.settings,
     kmDone: state.kmDone,
     manual: state.schedule.lessons.filter((l) => l.manual),
-  });
+  };
+}
+const cloudPayload = () => JSON.stringify(syncData());
+
+// пришла более свежая версия с другого устройства — заменяем свои данные
+function applyRemote(data, savedAt) {
+  const d = defaultState();
+  state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
+  state.settings = migrateSettings({ ...d.settings, ...(data.settings || {}), hiddenV: (data.settings || {}).hiddenV || 1 });
+  state.kmDone = data.kmDone || {};
+  state.schedule.lessons = [...state.schedule.lessons.filter((l) => !l.manual), ...(data.manual || [])];
+  state.savedAt = savedAt;
+  saveLocal();
+  cloudSave();
+  if (!sheetRender) render();
 }
 
 function cloudSave() {
@@ -1620,14 +1670,7 @@ function cloudLoad() {
       try {
         const data = JSON.parse(keys.map((k) => vals[k] || '').join(''));
         if ((data.savedAt || 0) > (state.savedAt || 0)) {
-          const d = defaultState();
-          state.tasks = Array.isArray(data.tasks) ? data.tasks : [];
-          state.settings = migrateSettings({ ...d.settings, ...(data.settings || {}), hiddenV: (data.settings || {}).hiddenV || 1 });
-          state.kmDone = data.kmDone || {};
-          state.schedule.lessons = [...state.schedule.lessons.filter((l) => !l.manual), ...(data.manual || [])];
-          state.savedAt = data.savedAt;
-          saveLocal();
-          if (!sheetRender) render();
+          applyRemote(data, data.savedAt);
         } else if ((state.savedAt || 0) > (data.savedAt || 0)) {
           cloudSave();
         }
@@ -1658,7 +1701,106 @@ function initTelegram() {
   tg.onEvent('themeChanged', applyTelegramTheme);
   tg.BackButton.onClick(closeSheet);
   if (tg.CloudStorage && tg.isVersionAtLeast && tg.isVersionAtLeast('6.9')) cloudLoad();
+  tgLogin();
 }
+
+/* ---------------- синхронизация через свой сервер (Cloudflare) ---------------- */
+
+// Один «ключ синхронизации» = одни данные. В Telegram ключ выдаёт сервер по подписи Telegram,
+// на айфоне/компьютере его вставляют вручную или открывают ссылку вида …/bot/#sync=КЛЮЧ.
+const SYNC_KEY_STORE = 'bmstu-planner-sync';
+const syncApi = () => (typeof SYNC_API !== 'undefined' && SYNC_API) || '';
+let syncKey = '';
+try { syncKey = localStorage.getItem(SYNC_KEY_STORE) || ''; } catch (e) { /* приватный режим */ }
+let syncStatus = 'off'; // off | ok | error
+let syncTimer = null;
+
+function setSyncKey(k) {
+  syncKey = k || '';
+  try { syncKey ? localStorage.setItem(SYNC_KEY_STORE, syncKey) : localStorage.removeItem(SYNC_KEY_STORE); } catch (e) { /* ничего */ }
+}
+
+async function api(path, opts = {}) {
+  const r = await fetch(syncApi() + path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(syncKey ? { Authorization: 'Bearer ' + syncKey } : {}), ...(opts.headers || {}) },
+  });
+  const body = await r.json().catch(() => ({}));
+  return { status: r.status, body };
+}
+
+async function serverPull() {
+  if (!syncApi() || !syncKey) return;
+  try {
+    const { status, body } = await api('/api/state');
+    if (status !== 200) throw new Error(status);
+    syncStatus = 'ok';
+    if (body.data && body.savedAt > (state.savedAt || 0)) applyRemote(body.data, body.savedAt);
+    else if ((state.savedAt || 0) > (body.savedAt || 0)) serverPush();
+  } catch (e) { syncStatus = 'error'; }
+  if (ui.tab === 'settings' && !sheetRender) render();
+}
+
+async function serverPush() {
+  if (!syncApi() || !syncKey) return;
+  try {
+    const { status, body } = await api('/api/state', { method: 'PUT', body: JSON.stringify({ savedAt: state.savedAt || 0, data: syncData() }) });
+    if (status === 409 && body.newer) applyRemote(body.newer.data, body.newer.savedAt);
+    else if (status !== 200) throw new Error(status);
+    syncStatus = 'ok';
+  } catch (e) { syncStatus = 'error'; }
+}
+
+function serverSave() {
+  if (!syncApi() || !syncKey) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(serverPush, 1200);
+}
+
+async function tgLogin(linkKey) {
+  if (!syncApi() || !tg) return false;
+  try {
+    const { status, body } = await api('/api/tg-login', {
+      method: 'POST',
+      body: JSON.stringify({ initData: tg.initData, key: linkKey || syncKey || undefined, link: !!linkKey }),
+    });
+    if (status !== 200 || !body.key) throw new Error(status);
+    setSyncKey(body.key);
+    await serverPull();
+    return true;
+  } catch (e) { syncStatus = 'error'; return false; }
+}
+
+async function linkKey(raw) {
+  const k = String(raw || '').trim().replace(/^.*#sync=/, '');
+  if (!/^[A-Za-z0-9_-]{20,64}$/.test(k)) { toast('Это не похоже на ключ синхронизации'); return; }
+  if (tg) { if (!(await tgLogin(k))) { toast('Не удалось подключиться к серверу'); return; } }
+  else { setSyncKey(k); state.savedAt = 0; await serverPull(); }
+  toast(syncStatus === 'ok' ? 'Синхронизация подключена' : 'Сервер не ответил, попробую позже');
+  render();
+}
+
+async function shareSyncKey() {
+  if (!syncKey) return;
+  const text = syncKey;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { await navigator.clipboard.writeText(text); toast('Ключ скопирован'); return; }
+  } catch (e) { /* ниже — запасной вариант */ }
+  if (navigator.share) { try { await navigator.share({ text }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  prompt('Скопируй ключ:', text);
+}
+
+// ссылка с ключом: …/bot/#sync=КЛЮЧ
+(() => {
+  const m = location.hash.match(/sync=([A-Za-z0-9_-]{20,64})/);
+  if (m) {
+    setSyncKey(m[1]);
+    state.savedAt = Math.min(state.savedAt || 0, 1); // данные с сервера важнее пустого нового устройства
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+})();
+serverPull();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) serverPull(); });
 
 // SDK грузим только когда страницу открыл Telegram — в Safari он не нужен
 if (/tgWebApp/.test(location.hash + location.search) || window.TelegramWebviewProxy || window.TelegramWebview) {

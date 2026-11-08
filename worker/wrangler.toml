@@ -1,0 +1,13 @@
+# Сервер ежедневника. Разворачивается из GitHub Actions (.github/workflows/worker.yml),
+# id хранилища KV подставляется там же автоматически.
+name = "bmstu-planner"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[[kv_namespaces]]
+binding = "KV"
+id = "KV_NAMESPACE_ID"
+
+[triggers]
+crons = ["*/5 * * * *"]

@@ -1,0 +1,63 @@
+name: Сервер синхронизации и напоминаний
+
+on:
+  push:
+    paths:
+      - "worker/**"
+      - ".github/workflows/worker.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write # записать адрес сервера в js/config.js
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Проверить токен Cloudflare
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::Нет секрета CLOUDFLARE_API_TOKEN (Settings → Secrets and variables → Actions)"
+            exit 1
+          fi
+
+      - name: Подготовить аккаунт, KV и поддомен workers.dev
+        id: cf
+        run: python3 scripts/cloudflare_prepare.py
+
+      - name: Развернуть сервер
+        working-directory: worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+        run: npx --yes wrangler@4.151.2 deploy
+
+      - name: Передать серверу токен бота
+        working-directory: worker
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ steps.cf.outputs.account_id }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: printf '%s' "$TELEGRAM_BOT_TOKEN" | npx --yes wrangler@4.151.2 secret put TELEGRAM_BOT_TOKEN
+
+      - name: Записать адрес сервера в приложение
+        run: |
+          url="https://bmstu-planner.${{ steps.cf.outputs.subdomain }}.workers.dev"
+          printf "'use strict';\n// Адрес сервера синхронизации. Файл пишет GitHub Actions после развёртывания.\nconst SYNC_API = '%s';\n" "$url" > js/config.js
+          curl -fsS "$url" || echo "::warning::Сервер ещё не отвечает — workers.dev иногда включается пару минут"
+          if [ -z "$(git status --porcelain js/config.js)" ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/config.js
+          git commit -m "Адрес сервера синхронизации"
+          git pull --rebase
+          git push

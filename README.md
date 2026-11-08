@@ -68,6 +68,22 @@
 `scripts/setup_bot.py` при каждом запуске сводки. Внутри Telegram задачи
 хранятся в облаке Telegram (CloudStorage) и одинаковы на телефоне и компьютере.
 
+## Синхронизация и напоминания (Cloudflare)
+
+Бесплатный сервер на Cloudflare Workers (`worker/`): хранит задачи, чтобы они были
+одинаковыми на айфоне, в Telegram и на компьютере, и каждые 5 минут присылает в
+Telegram напоминания — перед парой (с тем, что сдавать) и в момент дела.
+
+Настройка (один раз):
+1. dash.cloudflare.com → My Profile → **API Tokens** → **Create Token** →
+   шаблон **Edit Cloudflare Workers** → Account Resources: свой аккаунт,
+   Zone Resources: All zones → **Create Token** → скопируй токен.
+2. GitHub → Settings → Secrets and variables → Actions → секрет `CLOUDFLARE_API_TOKEN`.
+3. Actions → **«Сервер синхронизации и напоминаний»** → Run workflow.
+   Он сам создаст хранилище, развернёт сервер и пропишет его адрес в `js/config.js`.
+4. В Telegram открой ежедневник → «Ещё» → «Скопировать ключ», затем на айфоне /
+   компьютере «Ещё» → «Вставить ключ».
+
 ## Файлы
 
 | Файл | Что это |
@@ -78,4 +94,6 @@
 | `scripts/fetch_schedule.py` | загрузка расписания из ЛКС |
 | `scripts/daily_digest.py` | утренняя сводка в Telegram |
 | `scripts/setup_bot.py` | кнопка «Открыть» и описание бота |
+| `worker/src/index.js` | сервер: синхронизация и напоминания |
+| `scripts/cloudflare_prepare.py` | подготовка Cloudflare перед развёртыванием |
 | `js/plan.js` | учебный план: контрольные недели, аттестация, сессия |
