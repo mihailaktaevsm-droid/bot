@@ -248,3 +248,63 @@ button:disabled { cursor: default; }
   .btn:hover { filter: brightness(1.06); }
   .sheet { border-radius: 18px 18px 0 0; box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.18); }
 }
+
+/* ---------- дневник: карточки пар ---------- */
+.cap { display: inline-block; }
+.cap::first-letter { text-transform: uppercase; }
+.day-summary { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 2px 0; }
+.day-summary span { background: var(--card); box-shadow: var(--shadow); border-radius: 10px; padding: 6px 11px; font-size: 14px; color: var(--text-2); }
+.day-summary b { color: var(--text); font-weight: 700; }
+.day-summary .warn b { color: var(--danger); }
+
+.lcard { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 10px; overflow: hidden; position: relative; }
+.lcard::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--c); }
+.lcard-main { display: block; width: 100%; text-align: left; padding: 12px 14px 8px 18px; }
+.lcard-head { display: flex; align-items: center; gap: 10px; }
+.lnum { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 800; color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent); }
+.lnum.small { width: 22px; height: 22px; font-size: 12px; }
+.ltime { font-weight: 600; font-size: 15px; font-variant-numeric: tabular-nums; }
+.lnow { margin-top: 7px; font-size: 12px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .02em; }
+.lroom { margin-left: auto; display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 14px; white-space: nowrap; }
+.tag { font-size: 11px; font-weight: 800; padding: 2px 6px; border-radius: 6px; background: color-mix(in srgb, var(--c, var(--accent)) 15%, transparent); color: var(--c, var(--accent)); }
+.lname { font-size: 17px; font-weight: 700; margin-top: 7px; line-height: 1.25; }
+.lteacher { color: var(--text-2); font-size: 14px; margin-top: 2px; }
+.lhw { margin: 4px 14px 0 18px; border-top: 1px solid var(--line); }
+.lhw .task { padding: 9px 0; }
+.lhw .task + .task { border-top: 0; }
+.ladd { display: block; width: 100%; text-align: left; color: var(--accent); font-size: 14px; font-weight: 600; padding: 8px 14px 12px 18px; }
+.lcard.past .lcard-main { opacity: .5; }
+.lcard.now { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+.lprogress { height: 3px; background: var(--accent-soft); }
+.lprogress i { display: block; height: 100%; background: var(--accent); }
+.lbreak { text-align: center; font-size: 13px; color: var(--text-2); margin: -2px 0 8px; }
+
+/* задание «как в дневнике» */
+.task.diary .subj-top { font-size: 13px; font-weight: 700; color: var(--c); margin-bottom: 1px; }
+.task.diary .title { font-size: 15.5px; }
+.strip .dots i.km { background: var(--danger); }
+
+/* ---------- недельный дневник ---------- */
+.week-nav { display: flex; justify-content: space-between; margin: 0 2px 12px; }
+.week-nav button { color: var(--accent); font-weight: 600; font-size: 15px; padding: 4px 2px; }
+.wday { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
+.wday.today { box-shadow: 0 0 0 2px var(--accent), var(--shadow); }
+.wday-h { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; font-weight: 700; font-size: 16px; background: var(--card-2); }
+.wday.today .wday-h { color: var(--accent); }
+.wday-h small { color: var(--text-2); font-weight: 500; font-size: 13px; }
+.wrow + .wrow { border-top: 1px solid var(--line); }
+.wmain { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 10px 14px; }
+.wtime { font-size: 14px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; width: 42px; flex: none; }
+.wname { flex: 1; min-width: 0; font-size: 15.5px; font-weight: 600; line-height: 1.25; }
+.wroom { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 13px; white-space: nowrap; }
+.whw { padding: 0 14px 6px 46px; }
+.whw .task, .wextra .task { padding: 6px 0; }
+.whw .task + .task { border-top: 0; }
+.whw .check, .wextra .check { width: 22px; height: 22px; }
+.wempty { padding: 12px 14px; color: var(--text-3); font-size: 14px; }
+.wextra { border-top: 1px dashed var(--line); padding: 4px 14px 6px; }
+@media (hover: hover) and (pointer: fine) {
+  .lcard-main:hover .lname, .wmain:hover .wname { color: var(--accent); }
+  .ladd:hover { background: var(--card-2); }
+}
+.km-plan { font-size: 12px; color: var(--text-3); font-weight: 500; }

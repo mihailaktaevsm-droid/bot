@@ -145,7 +145,7 @@ const ui = {
   showDone: false,
   showPastKm: false,
   openSubjects: new Set(),
-  weekParity: null,
+  weekStart: null,
   draft: null,
   lessonDraft: null,
 };
@@ -250,7 +250,7 @@ function upcomingKM(days) {
   return out;
 }
 
-function kmHTML(e) {
+function kmHTML(e, opts = {}) {
   const k = KM_KINDS[e.kind] || { label: e.kind, color: 'var(--accent)' };
   const done = !!state.kmDone[e.id];
   const late = e.date && !done && e.date < todayISO();
@@ -258,8 +258,8 @@ function kmHTML(e) {
     <div class="task km ${done ? 'done' : ''}">
       <button class="check" data-action="toggle-km" data-id="${esc(e.id)}" aria-label="Готово">${CHECK_SVG}</button>
       <div class="body">
-        <div class="title"><span class="km-tag" style="--c:${k.color}">${esc(e.kind)}</span>${esc(e.subject)}</div>
-        <div class="sub"><span>${k.label}</span>${e.date ? `<span>·</span><span class="${late ? 'late' : ''}">к ${esc(fmtRel(e.date))}</span>` : ''}</div>
+        <div class="title"><span class="km-tag" style="--c:${k.color}">${esc(e.kind)}</span>${opts.compact ? `${k.label} <span class="km-plan">по плану</span>` : esc(e.subject)}</div>
+        <div class="sub">${opts.compact ? '' : `<span>${k.label}</span>`}${e.date && !opts.compact && !opts.noDate ? `<span>·</span><span class="${late ? 'late' : ''}">к ${esc(fmtRel(e.date))}</span>` : ''}</div>
       </div>
     </div>`;
 }
@@ -587,6 +587,58 @@ function lessonHTML(l, opts = {}) {
     </button>`;
 }
 
+// задание «как в дневнике»: предмет сверху, текст задания ниже
+function hwRowHTML(t, opts = {}) {
+  const late = !t.done && t.date < todayISO();
+  const meta = [];
+  if (opts.showDate) meta.push(`<span class="${late ? 'late' : ''}">${esc(fmtRel(t.date))}</span>`);
+  if (t.time) meta.push(`<span>${esc(t.time)}</span>`);
+  return `
+    <div class="task diary ${t.done ? 'done' : ''}">
+      <button class="check" data-action="toggle" data-id="${t.id}" aria-label="Выполнено">${CHECK_SVG}</button>
+      <div class="body" data-action="edit-task" data-id="${t.id}">
+        ${opts.showSubject && t.subject ? `<div class="subj-top" style="--c:${subjectColor(t.subject)}">${esc(t.subject)}${t.important ? ' <span class="flag">!</span>' : ''}</div>` : ''}
+        <div class="title">${!opts.showSubject && t.important ? '<span class="flag">!</span> ' : ''}${esc(t.title)}</div>
+        ${t.note ? `<div class="note">${esc(t.note)}</div>` : ''}
+        ${meta.length ? `<div class="sub">${meta.join('<span>·</span>')}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// карточка пары: шапка (номер, время, аудитория), предмет, преподаватель,
+// а под ними — что сдать к этой паре и контрольные по плану
+function lessonCardHTML(l, date, opts = {}) {
+  const type = LESSON_TYPES[l.type] || LESSON_TYPES.other;
+  const num = l.slot || (SLOTS.findIndex((x) => x.start === l.start) + 1) || '';
+  const hw = opts.hw || [];
+  const kms = opts.kms || [];
+  let progress = '';
+  if (opts.status === 'now') {
+    const pct = Math.min(100, Math.max(0, Math.round(((nowMinutes() - toMin(l.start)) / (toMin(l.end) - toMin(l.start))) * 100)));
+    progress = `<div class="lprogress"><i style="width:${pct}%"></i></div>`;
+  }
+  const next = nextLessonDate(l.subject, date);
+  return `
+    <div class="lcard ${opts.status || ''}" style="--c:${subjectColor(l.subject)}">
+      ${progress}
+      <button class="lcard-main" data-action="open-lesson" data-id="${l.id}" data-date="${date}">
+        <div class="lcard-head">
+          <span class="lnum">${num}</span>
+          <span class="ltime">${l.start}–${l.end}</span>
+          <span class="lroom">${type.tag ? `<span class="tag">${type.tag}</span>` : ''}${esc(l.room || '')}</span>
+        </div>
+        ${opts.status === 'now' ? `<div class="lnow">Идёт сейчас · ещё ${fmtDuration(toMin(l.end) - nowMinutes())}</div>` : ''}
+        <div class="lname">${esc(l.subject)}</div>
+        ${l.teacher ? `<div class="lteacher">${esc(l.teacher)}</div>` : ''}
+      </button>
+      ${hw.length || kms.length ? `<div class="lhw">
+        ${kms.map((e) => kmHTML(e, { compact: true })).join('')}
+        ${hw.map((t) => hwRowHTML(t)).join('')}
+      </div>` : ''}
+      <button class="ladd" data-action="add-hw" data-subject="${esc(l.subject)}" ${next ? `data-date="${next}"` : ''}>＋ Записать ДЗ${next ? ` к ${esc(fmtRel(next))}` : ''}</button>
+    </div>`;
+}
+
 function emptyHTML(icon, text, extra = '') {
   return `<div class="card"><div class="empty"><div class="big">${icon}</div>${text}${extra}</div></div>`;
 }
@@ -606,7 +658,8 @@ function renderDay() {
   for (let i = 0; i < 7; i++) {
     const d = addDays(mon, i);
     const active = state.tasks.filter((t) => t.date === d && !t.done);
-    const dots = active.slice(0, 3).map((t) => `<i class="${t.subject ? 'hw' : ''}"></i>`).join('');
+    const kmDay = w.inSemester && mondayOf(d) === mondayOf(s) ? kmForWeek(w.sem, w.n).filter((e) => !state.kmDone[e.id] && kmDue(w.sem, e) === d).length : 0;
+    const dots = (kmDay ? '<i class="km"></i>' : '') + active.slice(0, kmDay ? 2 : 3).map((t) => `<i class="${t.subject ? 'hw' : ''}"></i>`).join('');
     strip += `
       <button class="${d === today ? 'today' : ''} ${d === s ? 'selected' : ''}" data-action="pick-date" data-date="${d}">
         <span class="dow">${DOW_SHORT[i]}</span>
@@ -615,6 +668,10 @@ function renderDay() {
       </button>`;
   }
   const monthLabel = MONTHS_NOM[parse(s).getMonth()];
+
+  // контрольные по плану на эту неделю; те, что приходятся на этот день, попадут в карточки пар
+  const weekKms = w.inSemester ? kmForWeek(w.sem, w.n).map((e) => ({ ...e, date: kmDue(w.sem, e) })) : [];
+  const dayKms = weekKms.filter((e) => e.date === s);
 
   // пары
   const lessons = lessonsFor(s);
@@ -625,21 +682,25 @@ function renderDay() {
     lessonsHTML = emptyHTML(dow === 6 ? '😴' : '🎉', w.inSemester ? 'Пар нет — свободный день' : 'Вне учебного семестра');
   } else {
     const nm = nowMinutes();
+    const shown = new Set(); // домашку и контрольные показываем у первой пары предмета за день
     let html = '';
     lessons.forEach((l, i) => {
       if (i > 0) {
         const gap = toMin(l.start) - toMin(lessons[i - 1].end);
-        if (gap >= 40) html += `<div class="break">Окно · ${fmtDuration(gap)}</div>`;
+        if (gap >= 40) html += `<div class="lbreak">☕ Окно · ${fmtDuration(gap)}</div>`;
       }
       let status = '';
       if (isToday) {
         if (nm >= toMin(l.end)) status = 'past';
         else if (nm >= toMin(l.start)) status = 'now';
       }
-      const hwCount = state.tasks.filter((t) => !t.done && t.subject === l.subject && t.date === s).length;
-      html += lessonHTML(l, { status, hwCount, date: s });
+      const first = !shown.has(l.subject);
+      shown.add(l.subject);
+      const hw = first ? state.tasks.filter((t) => t.subject === l.subject && t.date === s).sort(taskSort) : [];
+      const kmsHere = first ? dayKms.filter((e) => e.subject === l.subject) : [];
+      html += lessonCardHTML(l, s, { status, hw, kms: kmsHere });
     });
-    lessonsHTML = `<div class="card">${html}</div>`;
+    lessonsHTML = html;
   }
 
   let lessonsSub = '';
@@ -654,8 +715,9 @@ function renderDay() {
     }
   }
 
-  // задачи
-  const list = tasksOn(s);
+  // задачи (домашка к сегодняшним парам уже в карточках — здесь только остальное)
+  const inCards = new Set(lessons.map((l) => l.subject));
+  const list = tasksOn(s).filter((t) => !t.subject || !inCards.has(t.subject));
   const done = list.filter((t) => t.done).length;
   const late = isToday ? overdue() : [];
 
@@ -677,7 +739,7 @@ function renderDay() {
       .sort((a, b) => a.date.localeCompare(b.date) || taskSort(a, b));
     if (upcoming.length) {
       tasksHTML += `<div class="section-title">Домашка на неделю <small>${upcoming.length}</small></div>
-        <div class="card">${upcoming.map((t) => taskHTML(t, { showDate: true })).join('')}</div>`;
+        <div class="card">${upcoming.map((t) => hwRowHTML(t, { showSubject: true, showDate: true })).join('')}</div>`;
     }
   }
 
@@ -685,11 +747,20 @@ function renderDay() {
     ? `<span class="pill">${w.n} неделя</span><span class="pill gray">${w.numerator ? 'Числитель' : 'Знаменатель'}</span>`
     : w.session ? '<span class="pill danger">Сессия</span>' : w.vacation ? '<span class="pill gray">Каникулы</span>' : '';
 
-  const kms = w.inSemester ? kmForWeek(w.sem, w.n).map((e) => ({ ...e, date: kmDue(w.sem, e) })) : [];
-  const kmLeft = kms.filter((e) => !state.kmDone[e.id]).length;
-  const kmBlock = kms.length ? `
+  const otherKms = weekKms.filter((e) => e.date !== s || !lessons.some((l) => l.subject === e.subject));
+  const kmLeft = weekKms.filter((e) => !state.kmDone[e.id]).length;
+  const kmBlock = otherKms.length ? `
       <div class="section-title">Контрольные на неделе <small>${kmLeft ? `осталось ${kmLeft}` : 'всё сдано'}</small></div>
-      <div class="card">${kms.map(kmHTML).join('')}</div>` : '';
+      <div class="card">${otherKms.map(kmHTML).join('')}</div>` : '';
+
+  // сводка дня одной строкой
+  const hwToday = state.tasks.filter((t) => t.subject && !t.done && t.date === s).length;
+  const kmToday = dayKms.filter((e) => !state.kmDone[e.id]).length;
+  const summary = [
+    lessons.length ? `<span><b>${lessons.length}</b> ${plural(lessons.length, 'пара', 'пары', 'пар')}</span>` : '',
+    hwToday ? `<span><b>${hwToday}</b> ДЗ</span>` : '',
+    kmToday ? `<span class="warn"><b>${kmToday}</b> ${plural(kmToday, 'контрольная', 'контрольные', 'контрольных')}</span>` : '',
+  ].filter(Boolean).join('');
 
   return `
     <div class="fade-in">
@@ -706,10 +777,11 @@ function renderDay() {
         <button data-action="shift-week" data-n="1">След. ›</button>
       </div>
       <div class="strip" id="strip">${strip}</div>
+      ${summary ? `<div class="day-summary">${summary}</div>` : ''}
       <div class="section-title">Пары <small>${lessonsSub}</small></div>
       ${lessonsHTML}
-      ${kmBlock}
       ${tasksHTML}
+      ${kmBlock}
     </div>`;
 }
 
@@ -730,18 +802,19 @@ function renderHW() {
       ...active.map((t) => ({ date: t.date, t })),
       ...km.map((e) => ({ date: e.date, e })),
     ];
-    const groups = [
-      { title: 'Просрочено', cls: 'danger', items: all.filter((x) => x.date < today) },
-      { title: 'К сегодня', items: all.filter((x) => x.date === today) },
-      { title: 'К завтра', items: all.filter((x) => x.date === tomorrow) },
-      { title: 'На этой неделе', items: all.filter((x) => x.date > tomorrow && x.date <= sunday) },
-      { title: 'Позже', items: all.filter((x) => x.date > sunday && x.date > tomorrow) },
-    ];
-    for (const g of groups) {
-      if (!g.items.length) continue;
-      g.items.sort((a, b) => a.date.localeCompare(b.date) || (a.t && b.t ? taskSort(a.t, b.t) : a.t ? -1 : b.t ? 1 : 0));
-      body += `<div class="section-title ${g.cls || ''}">${g.title} <small>${g.items.length}</small></div>
-        <div class="card">${g.items.map((x) => (x.t ? taskHTML(x.t, { showDate: true }) : kmHTML(x.e))).join('')}</div>`;
+    const byOrder = (a, b) => a.date.localeCompare(b.date) || (a.t && b.t ? taskSort(a.t, b.t) : a.e ? -1 : b.e ? 1 : 0);
+    const item = (x, showDate) => (x.t ? hwRowHTML(x.t, { showSubject: true, showDate }) : kmHTML(x.e, { noDate: !showDate }));
+    const late = all.filter((x) => x.date < today).sort(byOrder);
+    if (late.length) {
+      body += `<div class="section-title danger">Просрочено <small>${late.length}</small></div>
+        <div class="card">${late.map((x) => item(x, true)).join('')}</div>`;
+    }
+    const dates = [...new Set(all.filter((x) => x.date >= today).map((x) => x.date))].sort();
+    for (const d of dates) {
+      const items = all.filter((x) => x.date === d).sort(byOrder);
+      const rel = d === today ? 'Сегодня' : d === tomorrow ? 'Завтра' : DOW_FULL[dowIdx(d)];
+      body += `<div class="section-title ${d === today ? 'accent' : ''}"><span class="cap">${rel}</span> <small>${fmtDay(d)}${d > tomorrow ? '' : ', ' + DOW_FULL[dowIdx(d)]}</small></div>
+        <div class="card">${items.map((x) => item(x, false)).join('')}</div>`;
     }
     if (!all.length) body += emptyHTML('🎓', 'Вся домашка сделана!<br>Добавь новую через <b>+</b> или нажав на пару.');
     if (km.length) body += '<div class="list-foot">ДЗ, РК и модули из учебного плана показаны на 2 недели вперёд. Весь семестр — во вкладке «Контрольные».</div>';
@@ -749,7 +822,7 @@ function renderHW() {
     if (doneList.length) {
       body += `<div class="section-title"><span>Выполнено <small>${doneList.length}</small></span>
         <button class="link-btn" data-action="toggle-done">${ui.showDone ? 'Скрыть' : 'Показать'}</button></div>`;
-      if (ui.showDone) body += `<div class="card">${doneList.slice(0, 50).map((t) => taskHTML(t, { showDate: true })).join('')}</div>`;
+      if (ui.showDone) body += `<div class="card">${doneList.slice(0, 50).map((t) => hwRowHTML(t, { showSubject: true, showDate: true })).join('')}</div>`;
     }
   } else if (ui.hwMode === 'km') {
     body = renderKM();
@@ -764,9 +837,9 @@ function renderHW() {
         const next = nextLessonDate(name);
         let inner = '';
         if (open) {
-          inner = act.map((t) => taskHTML(t, { showDate: true })).join('');
+          inner = act.map((t) => hwRowHTML(t, { showDate: true })).join('');
           const doneItems = items.filter((t) => t.done).sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0)).slice(0, 3);
-          inner += doneItems.map((t) => taskHTML(t, { showDate: true })).join('');
+          inner += doneItems.map((t) => hwRowHTML(t, { showDate: true })).join('');
           inner += `<button class="row accent" data-action="add-hw" data-subject="${esc(name)}">＋ Добавить ДЗ${next ? ` к ${esc(fmtRel(next))}` : ''}</button>`;
         }
         return `
@@ -824,42 +897,67 @@ function renderKM() {
   return html;
 }
 
-/* ---------------- вкладка «Расписание» ---------------- */
+/* ---------------- вкладка «Неделя»: дневник ---------------- */
 
 function renderWeek() {
   const today = todayISO();
-  const w = weekInfo(today);
-  if (ui.weekParity === null) ui.weekParity = w.numerator ? 'ch' : 'zn';
-  const numerator = ui.weekParity === 'ch';
-  const thisWeek = numerator === w.numerator;
+  if (!ui.weekStart) ui.weekStart = mondayOf(today);
+  const mon = ui.weekStart;
+  const w = weekInfo(mon);
+  const isThisWeek = mon === mondayOf(today);
+  const kms = w.inSemester ? kmForWeek(w.sem, w.n).map((e) => ({ ...e, date: kmDue(w.sem, e) })) : [];
 
   let body = '';
   if (!state.schedule.lessons.length) {
     body = emptyHTML('🗓️', 'Расписание пустое', '<button class="btn" data-action="refresh-schedule">Загрузить из ЛКС</button><button class="btn secondary" data-action="add-lesson" style="margin-top:8px">Добавить пару вручную</button>');
   } else {
-    for (let day = 1; day <= 6; day++) {
-      const ls = lessonsForWeekday(day, numerator);
-      const isToday = thisWeek && dowIdx(today) + 1 === day;
-      body += `<div class="day-block"><h3 class="${isToday ? 'today' : ''}">${DOW_FULL[day - 1]}${isToday ? ' · сегодня' : ''}</h3>
-        ${ls.length ? `<div class="card">${ls.map((l) => lessonHTML(l)).join('')}</div>` : '<div class="card"><div class="empty" style="padding:14px">Нет пар</div></div>'}
-      </div>`;
+    for (let i = 0; i < 6; i++) {
+      const d = addDays(mon, i);
+      const ls = lessonsFor(d);
+      const isToday = d === today;
+      const shown = new Set();
+      const rows = ls.map((l) => {
+        const first = !shown.has(l.subject);
+        shown.add(l.subject);
+        const hw = first ? state.tasks.filter((t) => t.subject === l.subject && t.date === d).sort(taskSort) : [];
+        const kmHere = first ? kms.filter((e) => e.subject === l.subject && e.date === d) : [];
+        const type = LESSON_TYPES[l.type] || LESSON_TYPES.other;
+        const num = l.slot || (SLOTS.findIndex((x) => x.start === l.start) + 1) || '';
+        return `
+          <div class="wrow" style="--c:${subjectColor(l.subject)}">
+            <button class="wmain" data-action="open-lesson" data-id="${l.id}" data-date="${d}">
+              <span class="lnum small">${num}</span>
+              <span class="wtime">${l.start}</span>
+              <span class="wname">${esc(l.subject)}</span>
+              <span class="wroom">${type.tag ? `<span class="tag">${type.tag}</span>` : ''}${esc(l.room || '')}</span>
+            </button>
+            ${kmHere.length || hw.length ? `<div class="whw">${kmHere.map((e) => kmHTML(e, { compact: true })).join('')}${hw.map((t) => hwRowHTML(t)).join('')}</div>` : ''}
+          </div>`;
+      }).join('');
+      const extra = state.tasks.filter((t) => t.date === d && (!t.subject || !shown.has(t.subject))).sort(taskSort);
+      body += `
+        <div class="wday ${isToday ? 'today' : ''}">
+          <div class="wday-h"><span><span class="cap">${DOW_FULL[i]}</span>, ${fmtDay(d)}</span>${isToday ? '<span class="pill">сегодня</span>' : ls.length ? `<small>${ls[0].start}–${ls[ls.length - 1].end}</small>` : ''}</div>
+          ${rows || '<div class="wempty">Пар нет</div>'}
+          ${extra.length ? `<div class="wextra">${extra.map((t) => hwRowHTML(t, { showSubject: true })).join('')}</div>` : ''}
+        </div>`;
     }
     body += '<button class="btn secondary" data-action="add-lesson">＋ Добавить пару вручную</button>';
   }
 
-  const upd = state.schedule.fetchedAt ? new Date(state.schedule.fetchedAt) : null;
+  const label = w.inSemester ? `${w.n} неделя · ${w.numerator ? 'числитель' : 'знаменатель'}` : w.session ? 'сессия' : w.vacation ? 'каникулы' : 'вне семестра';
   return `
     <div class="fade-in">
       <div class="header">
         <div>
-          <h1>Расписание</h1>
-          <div class="subtitle">${esc(state.settings.group)}${upd ? ` · обновлено ${upd.getDate()} ${MONTHS_SHORT[upd.getMonth()]}` : ''}</div>
+          <h1>Неделя</h1>
+          <div class="subtitle">${fmtRange(mon, addDays(mon, 6))} · ${label}</div>
         </div>
-        <button class="link-btn" data-action="refresh-schedule">Обновить</button>
+        ${isThisWeek ? '<button class="link-btn" data-action="refresh-schedule">Обновить</button>' : '<button class="link-btn" data-action="week-today">Текущая</button>'}
       </div>
-      <div class="segmented">
-        <button class="${numerator ? 'active' : ''}" data-action="parity" data-p="ch">Числитель${w.numerator ? ' · сейчас' : ''}</button>
-        <button class="${!numerator ? 'active' : ''}" data-action="parity" data-p="zn">Знаменатель${!w.numerator ? ' · сейчас' : ''}</button>
+      <div class="week-nav">
+        <button data-action="shift-diary-week" data-n="-1">‹ Предыдущая</button>
+        <button data-action="shift-diary-week" data-n="1">Следующая ›</button>
       </div>
       ${body}
     </div>`;
@@ -932,7 +1030,7 @@ function render() {
   const renderers = { day: renderDay, hw: renderHW, week: renderWeek, settings: renderSettings };
   view.innerHTML = renderers[ui.tab]();
   document.querySelectorAll('.tab').forEach((b) => b.classList.toggle('active', b.dataset.tab === ui.tab));
-  fab.classList.toggle('hidden', ui.tab === 'settings' || ui.tab === 'week');
+  fab.classList.toggle('hidden', ui.tab === 'settings');
   window.scrollTo(0, scroll);
 }
 
@@ -1317,7 +1415,8 @@ const actions = {
     ui.openSubjects.has(s) ? ui.openSubjects.delete(s) : ui.openSubjects.add(s);
     render();
   },
-  'parity': (el) => { ui.weekParity = el.dataset.p; render(); },
+  'shift-diary-week': (el) => { ui.weekStart = addDays(ui.weekStart || mondayOf(todayISO()), 7 * Number(el.dataset.n)); render(); window.scrollTo(0, 0); },
+  'week-today': () => { ui.weekStart = mondayOf(todayISO()); render(); },
 
   'refresh-schedule': () => { toast('Обновляю расписание…'); refreshSchedule({ force: true }); },
   'open-lks': () => {
