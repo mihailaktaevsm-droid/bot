@@ -2,7 +2,7 @@
  "group": "Э5-11/6",
  "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
  "title": "Э5-11/6",
- "fetchedAt": "2026-11-11T04:04:29Z",
+ "fetchedAt": "2026-11-12T04:03:51Z",
  "raw": {
   "data": {
    "link": "https://lks.bmstu.ru/lks-back/srv/v2/ics/fdcc10a2-2cea-11f1-a2a8-005056aae53e",
@@ -288,16 +288,16 @@
      "endTime": "15:35",
      "teachers": [
       {
-       "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
-       "lastName": "Горячкина",
-       "firstName": "Александра",
-       "middleName": "Юрьевна"
-      },
-      {
        "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
        "lastName": "Лиморенко",
        "firstName": "Мария",
        "middleName": "Евгеньевна"
+      },
+      {
+       "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
+       "lastName": "Горячкина",
+       "firstName": "Александра",
+       "middleName": "Юрьевна"
       }
      ],
      "audiences": [
@@ -418,11 +418,29 @@
       ]
      },
      "endTime": "11:40",
-     "teachers": [],
+     "teachers": [
+      {
+       "uuid": "c81a9a6e-47f4-11ee-b830-005056b16637",
+       "lastName": "Филатова",
+       "firstName": "Любовь",
+       "middleName": "Юрьевна"
+      },
+      {
+       "uuid": "5308810a-b000-11f1-b952-005056b16637",
+       "lastName": "Хабаров",
+       "firstName": "Даниил",
+       "middleName": "Викторович"
+      }
+     ],
      "audiences": [
       {
-       "name": "каф. ФН5",
-       "uuid": null
+       "name": "243",
+       "uuid": "2aaf6a5d-0433-47cb-9385-78d6c1e5069e",
+       "building": "A1 ГУК",
+       "root_uuid": "8c1b7bb8-e690-11db-89c3-000cf1a7cbf0",
+       "department_uid": "a254724a-82fc-1029-96dd-000347adedc6",
+       "building_id_block": 2,
+       "building_id_building": 15
       }
      ],
      "startTime": "10:10",
@@ -475,7 +493,14 @@
       ]
      },
      "endTime": "13:20",
-     "teachers": [],
+     "teachers": [
+      {
+       "uuid": "c81a9a6e-47f4-11ee-b830-005056b16637",
+       "lastName": "Филатова",
+       "firstName": "Любовь",
+       "middleName": "Юрьевна"
+      }
+     ],
      "audiences": [
       {
        "name": "327.1",
@@ -1139,6 +1164,6 @@
     }
    ]
   },
-  "date": "2026-11-11T00:22:57.369+03:00"
+  "date": "2026-11-12T06:36:55.197+03:00"
  }
 }
