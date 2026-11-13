@@ -2,7 +2,7 @@
  "group": "Э5-11/6",
  "uuid": "fdcc10a2-2cea-11f1-a2a8-005056aae53e",
  "title": "Э5-11/6",
- "fetchedAt": "2026-11-12T04:03:51Z",
+ "fetchedAt": "2026-11-13T04:02:21Z",
  "raw": {
   "data": {
    "link": "https://lks.bmstu.ru/lks-back/srv/v2/ics/fdcc10a2-2cea-11f1-a2a8-005056aae53e",
@@ -288,16 +288,16 @@
      "endTime": "15:35",
      "teachers": [
       {
-       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
-       "lastName": "Лиморенко",
-       "firstName": "Мария",
-       "middleName": "Евгеньевна"
-      },
-      {
        "uuid": "d6ec749c-ab98-4809-bf16-34f390ff6046",
        "lastName": "Горячкина",
        "firstName": "Александра",
        "middleName": "Юрьевна"
+      },
+      {
+       "uuid": "d8e7a847-2cac-4afb-b036-2ca2aeead66e",
+       "lastName": "Лиморенко",
+       "firstName": "Мария",
+       "middleName": "Евгеньевна"
       }
      ],
      "audiences": [
@@ -420,16 +420,16 @@
      "endTime": "11:40",
      "teachers": [
       {
-       "uuid": "c81a9a6e-47f4-11ee-b830-005056b16637",
-       "lastName": "Филатова",
-       "firstName": "Любовь",
-       "middleName": "Юрьевна"
-      },
-      {
        "uuid": "5308810a-b000-11f1-b952-005056b16637",
        "lastName": "Хабаров",
        "firstName": "Даниил",
        "middleName": "Викторович"
+      },
+      {
+       "uuid": "c81a9a6e-47f4-11ee-b830-005056b16637",
+       "lastName": "Филатова",
+       "firstName": "Любовь",
+       "middleName": "Юрьевна"
       }
      ],
      "audiences": [
@@ -1164,6 +1164,6 @@
     }
    ]
   },
-  "date": "2026-11-12T06:36:55.197+03:00"
+  "date": "2026-11-13T05:58:10.800+03:00"
  }
 }
